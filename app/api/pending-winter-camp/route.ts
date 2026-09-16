@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   try {
     await requireAdmin(request);
 
-    const pendingRequests = await prisma.pendingSummerCampRegistration.findMany(
+    const pendingRequests = await prisma.pendingWinterCampRegistration.findMany(
       {
         orderBy: {
           createdAt: "desc",
@@ -86,8 +86,8 @@ export async function POST(request: NextRequest) {
       children,
     } = result.data;
 
-    // Get current summer camp pricing
-    const pricing = await prisma.summerCampPricing.findFirst({
+    // Get current winter camp pricing
+    const pricing = await prisma.winterCampPricing.findFirst({
       orderBy: {
         createdAt: "desc",
       },
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     if (!pricing) {
       return NextResponse.json(
         {
-          message: "Summer camp pricing not found",
+          message: "Winter camp pricing not found",
         },
         { status: 404 },
       );
@@ -105,19 +105,18 @@ export async function POST(request: NextRequest) {
     if (!pricing.isEnabled) {
       return NextResponse.json(
         {
-          message: "Summer camp registration is currently disabled",
+          message: "Winter camp registration is currently disabled",
         },
         { status: 403 },
       );
     }
-
     // Calculate fee using admin-configured pricing
     const { subtotal, siblingDiscount, processingFee, totalAmount } =
       calculateCampFee(children, pricing);
 
     // create pending request
     const pendingRegistration =
-      await prisma.pendingSummerCampRegistration.create({
+      await prisma.pendingWinterCampRegistration.create({
         data: {
           registrationId: generateRegistrationId(),
           parentGuardianName,
@@ -151,7 +150,7 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: "cad",
             product_data: {
-              name: "Summer Camp Registration",
+              name: "Winter Camp Registration",
             },
             unit_amount: Math.round(totalAmount * 100),
           },
@@ -160,17 +159,17 @@ export async function POST(request: NextRequest) {
       ],
 
       success_url:
-        "http://localhost:3000/summer-program/success?session_id={CHECKOUT_SESSION_ID}",
+        "http://localhost:3000/winter-program/success?session_id={CHECKOUT_SESSION_ID}",
 
-      cancel_url: "http://localhost:3000/summer-program/cancel",
+      cancel_url: "http://localhost:3000/winter-program/cancel",
 
       metadata: {
         pendingRegistrationId: pendingRegistration.id,
-        campType: "SUMMER",
+        campType: "WINTER",
       },
     });
 
-    await prisma.pendingSummerCampRegistration.update({
+    await prisma.pendingWinterCampRegistration.update({
       where: {
         id: pendingRegistration.id,
       },
@@ -181,7 +180,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message: "Pending summer camp registration created successfully",
+        message: "Pending winter camp registration created successfully",
         data: {
           registrationId: pendingRegistration.registrationId,
           subtotal,

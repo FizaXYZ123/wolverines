@@ -4,6 +4,15 @@ type Child = {
   gender: string;
 };
 
+type CampPricing = {
+  minAge: number;
+  maxAge: number;
+  youngerAgePrice: any;
+  olderAgePrice: any;
+  siblingDiscount: any;
+  processingFeePercent: any;
+};
+
 function calculateAge(dateOfBirth: string): number {
   const birthDate = new Date(`${dateOfBirth}T00:00:00`);
   const today = new Date();
@@ -24,32 +33,41 @@ function calculateAge(dateOfBirth: string): number {
   return age;
 }
 
-export function calculateSummerCampFee(children: Child[]) {
+export function calculateCampFee(
+  children: Child[],
+  pricing: CampPricing,
+) {
   let subtotal = 0;
 
   for (const child of children) {
     const age = calculateAge(child.dateOfBirth);
 
-    if (age < 3) {
+    if (age < pricing.minAge) {
       throw new Error(
-        `${child.childName} must be at least 3 years old`,
+        `${child.childName} must be at least ${pricing.minAge} years old`,
       );
     }
 
-    if (age <= 7) {
-      subtotal += 360;
+    if (age <= pricing.maxAge) {
+      subtotal += Number(pricing.youngerAgePrice);
     } else {
-      subtotal += 560;
+      subtotal += Number(pricing.olderAgePrice);
     }
   }
 
-  const siblingDiscount = children.length > 1 ? 40 : 0;
+  const siblingDiscount =
+    children.length > 1
+      ? Number(pricing.siblingDiscount)
+      : 0;
 
   const amountAfterDiscount =
     subtotal - siblingDiscount;
 
   const processingFee = Number(
-    (amountAfterDiscount * 0.03).toFixed(2),
+    (
+      amountAfterDiscount *
+      (Number(pricing.processingFeePercent) / 100)
+    ).toFixed(2),
   );
 
   const totalAmount = Number(

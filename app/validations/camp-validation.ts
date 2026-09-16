@@ -2,49 +2,86 @@ import { z } from "zod";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 const childSchema = z.object({
-  childName: z.string().min(2).max(100),
+  childName: z
+    .string()
+    .min(2, "Child name must be at least 2 characters")
+    .max(100, "Child name must be less than 100 characters"),
+
   dateOfBirth: z
     .string()
     .regex(
       /^\d{4}-\d{2}-\d{2}$/,
       "Date of birth must be in YYYY-MM-DD format",
     ),
-  gender: z.string().min(1, "Gender is required"),
+
+  gender: z
+    .string()
+    .min(1, "Gender is required"),
 });
 
-export const summerCampRegistrationSchema = z
+export const campRegistrationSchema = z
   .object({
-    parentGuardianName: z.string().min(2).max(100),
+    parentGuardianName: z
+      .string()
+      .min(2, "Parent/Guardian name is required")
+      .max(100),
 
-    relationToChild: z.string().min(1),
+    relationToChild: z
+      .string()
+      .min(1, "Relation to child is required"),
 
-    email: z.string().email(),
+    email: z
+      .string()
+      .trim()
+      .email("Invalid email address"),
 
-    countryCode: z.string().min(1, "Country code is required"),
+    countryCode: z
+      .string()
+      .min(1, "Country code is required"),
 
     contactNumber: z
       .string()
       .min(1, "Contact number is required"),
 
-    secondaryCountryCode: z.string().optional().nullable(),
+    secondaryCountryCode: z
+      .string()
+      .optional()
+      .nullable(),
 
     secondaryContactNumber: z
       .string()
       .optional()
       .nullable(),
 
-    address: z.string().optional().nullable(),
+    address: z
+      .string()
+      .optional()
+      .nullable(),
 
-    city: z.string().optional().nullable(),
+    city: z
+      .string()
+      .optional()
+      .nullable(),
 
-    postalCode: z.string().optional().nullable(),
+    postalCode: z
+      .string()
+      .optional()
+      .nullable(),
 
-    country: z.string().optional().nullable(),
+    country: z
+      .string()
+      .optional()
+      .nullable(),
 
-    message: z.string().max(1000).optional().nullable(),
+    message: z
+      .string()
+      .max(1000, "Message cannot exceed 1000 characters")
+      .optional()
+      .nullable(),
 
-    children: z.array(childSchema).min(1),
-
+    children: z
+      .array(childSchema)
+      .min(1, "At least one child is required"),
   })
   .superRefine((data, ctx) => {
     // Main phone number

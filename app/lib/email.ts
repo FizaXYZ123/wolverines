@@ -9,7 +9,7 @@ export async function sendRegistrationNotification(registration: {
   const apiKey = process.env.BREVO_API_KEY;
   const senderEmail = process.env.BREVO_SENDER_EMAIL;
   const senderName = process.env.BREVO_SENDER_NAME;
-  const notificationEmail = process.env.REGISTRATION_NOTIFICATION_EMAIL;
+  const notificationEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
 
   if (!apiKey) {
     throw new Error("BREVO_API_KEY is not configured");
@@ -20,7 +20,7 @@ export async function sendRegistrationNotification(registration: {
   }
 
   if (!notificationEmail) {
-    throw new Error("REGISTRATION_NOTIFICATION_EMAIL is not configured");
+    throw new Error("ADMIN_NOTIFICATION_EMAIL is not configured");
   }
 
   const response = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -82,23 +82,22 @@ Registration ID: ${registration.id}
   return await response.json();
 }
 
-export async function sendSummerCampRegistrationNotification(
-  registration: {
-    id: string;
-    parentGuardianName: string;
-    email: string;
-    countryCode: string;
-    contactNumber: string;
-    children: any;
-    totalAmount: any;
-    paymentStatus: string;
-  },
-) {
+export async function sendCampRegistrationNotification(registration: {
+  id: string;
+  campType: string;
+  parentGuardianName: string;
+  email: string;
+  countryCode: string;
+  contactNumber: string;
+  children: any;
+  totalAmount: any;
+  paymentStatus: string;
+  registrationId: string;
+}) {
   const apiKey = process.env.BREVO_API_KEY;
   const senderEmail = process.env.BREVO_SENDER_EMAIL;
   const senderName = process.env.BREVO_SENDER_NAME;
-  const notificationEmail =
-    process.env.REGISTRATION_NOTIFICATION_EMAIL;
+  const notificationEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
 
   if (!apiKey) {
     throw new Error("BREVO_API_KEY is not configured");
@@ -109,41 +108,36 @@ export async function sendSummerCampRegistrationNotification(
   }
 
   if (!notificationEmail) {
-    throw new Error(
-      "REGISTRATION_NOTIFICATION_EMAIL is not configured",
-    );
+    throw new Error("ADMIN_NOTIFICATION_EMAIL is not configured");
   }
 
   const numberOfChildren = Array.isArray(registration.children)
     ? registration.children.length
     : 0;
 
-  const response = await fetch(
-    "https://api.brevo.com/v3/smtp/email",
-    {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "api-key": apiKey,
-        "content-type": "application/json",
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "api-key": apiKey,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      sender: {
+        name: senderName || "The Wolverines",
+        email: senderEmail,
       },
-      body: JSON.stringify({
-        sender: {
-          name: senderName || "The Wolverines",
-          email: senderEmail,
+
+      to: [
+        {
+          email: notificationEmail,
         },
+      ],
 
-        to: [
-          {
-            email: notificationEmail,
-          },
-        ],
+      subject: `New ${registration.campType} Camp Registration - Payment Successful`,
 
-        subject:
-          "New Summer Camp Registration - Payment Successful",
-
-        textContent: `
-A new Summer Camp registration has been completed.
+      textContent: `
+A new ${registration.campType} Camp registration has been completed.
 
 Parent/Guardian: ${registration.parentGuardianName}
 Email: ${registration.email}
@@ -154,11 +148,11 @@ Number of Children: ${numberOfChildren}
 Total Amount: $${registration.totalAmount}
 Payment Status: ${registration.paymentStatus}
 
-Registration ID: ${registration.id}
+Registration ID: ${registration.registrationId}
         `,
 
-        htmlContent: `
-          <h2>New Summer Camp Registration</h2>
+      htmlContent: `
+          <h2>New ${registration.campType} Camp Registration</h2>
 
           <p>
             <strong>Parent/Guardian:</strong>
@@ -193,33 +187,32 @@ Registration ID: ${registration.id}
 
           <p>
             <strong>Registration ID:</strong>
-            ${registration.id}
+            ${registration.registrationId}
           </p>
         `,
-      }),
-    },
-  );
+    }),
+  });
 
   if (!response.ok) {
     const errorData = await response.text();
 
     throw new Error(
-      `Brevo summer camp admin email failed: ${response.status} ${errorData}`,
+      `Brevo camp admin email failed: ${response.status} ${errorData}`,
     );
   }
 
   return await response.json();
 }
 
-export async function sendSummerCampParentConfirmation(
-  registration: {
-    id: string;
-    parentGuardianName: string;
-    email: string;
-    children: any;
-    totalAmount: any;
-  },
-) {
+export async function sendCampParentConfirmation(registration: {
+  id: string;
+  campType: string;
+  parentGuardianName: string;
+  email: string;
+  children: any;
+  totalAmount: any;
+  registrationId: string;
+}) {
   const apiKey = process.env.BREVO_API_KEY;
   const senderEmail = process.env.BREVO_SENDER_EMAIL;
   const senderName = process.env.BREVO_SENDER_NAME;
@@ -236,39 +229,36 @@ export async function sendSummerCampParentConfirmation(
     ? registration.children.length
     : 0;
 
-  const response = await fetch(
-    "https://api.brevo.com/v3/smtp/email",
-    {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "api-key": apiKey,
-        "content-type": "application/json",
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "api-key": apiKey,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      sender: {
+        name: senderName || "The Wolverines",
+        email: senderEmail,
       },
-      body: JSON.stringify({
-        sender: {
-          name: senderName || "The Wolverines",
-          email: senderEmail,
+
+      to: [
+        {
+          email: registration.email,
+          name: registration.parentGuardianName,
         },
+      ],
 
-        to: [
-          {
-            email: registration.email,
-            name: registration.parentGuardianName,
-          },
-        ],
+      subject: `${registration.campType} Camp Registration Confirmed - The Wolverines`,
 
-        subject:
-          "Summer Camp Registration Confirmed - The Wolverines",
-
-        textContent: `
+      textContent: `
 Hello ${registration.parentGuardianName},
 
-Thank you for registering for the Wolverines Summer Camp.
+Thank you for registering for the Wolverines ${registration.campType} Camp.
 
 Your payment has been successfully received and your registration is confirmed.
 
-Registration ID: ${registration.id}
+Registration ID: ${registration.registrationId}
 
 Number of Children: ${numberOfChildren}
 
@@ -278,8 +268,8 @@ Thank you,
 The Wolverines
         `,
 
-        htmlContent: `
-          <h2>Summer Camp Registration Confirmed</h2>
+      htmlContent: `
+          <h2>${registration.campType} Camp Registration Confirmed</h2>
 
           <p>
             Hello ${registration.parentGuardianName},
@@ -287,7 +277,7 @@ The Wolverines
 
           <p>
             Thank you for registering for the
-            <strong>Wolverines Summer Camp</strong>.
+            <strong>Wolverines ${registration.campType} Camp</strong>.
           </p>
 
           <p>
@@ -297,7 +287,7 @@ The Wolverines
 
           <p>
             <strong>Registration ID:</strong>
-            ${registration.id}
+            ${registration.registrationId}
           </p>
 
           <p>
@@ -315,15 +305,14 @@ The Wolverines
             <strong>The Wolverines</strong>
           </p>
         `,
-      }),
-    },
-  );
+    }),
+  });
 
   if (!response.ok) {
     const errorData = await response.text();
 
     throw new Error(
-      `Brevo parent confirmation email failed: ${response.status} ${errorData}`,
+      `Brevo camp parent confirmation email failed: ${response.status} ${errorData}`,
     );
   }
 

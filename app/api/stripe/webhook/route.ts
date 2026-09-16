@@ -4,8 +4,8 @@ import { stripe } from "@/app/lib/stripe";
 import { prisma } from "@/app/lib/prisma";
 
 import {
-  sendSummerCampParentConfirmation,
-  sendSummerCampRegistrationNotification,
+  sendCampParentConfirmation,
+  sendCampRegistrationNotification,
 } from "@/app/lib/email";
 
 export async function POST(request: NextRequest) {
@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
     // Stripe webhook body must be read as raw text
     const body = await request.text();
 
-    const signature = request.headers.get("stripe-signature");
+    const signature =
+      request.headers.get("stripe-signature");
 
     if (!signature) {
       return NextResponse.json(
@@ -25,13 +26,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const webhookSecret =
+      process.env.STRIPE_WEBHOOK_SECRET;
 
     if (!webhookSecret) {
       return NextResponse.json(
         {
           success: false,
-          message: "Stripe webhook secret is not configured",
+          message:
+            "Stripe webhook secret is not configured",
         },
         { status: 500 },
       );
@@ -39,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     let event: Stripe.Event;
 
-    // Verify Stripe signature
+    // Verify Stripe webhook signature
     try {
       event = stripe.webhooks.constructEvent(
         body,
@@ -47,7 +50,10 @@ export async function POST(request: NextRequest) {
         webhookSecret,
       );
     } catch (error) {
-      console.error("Webhook signature verification failed:", error);
+      console.error(
+        "Webhook signature verification failed:",
+        error,
+      );
 
       return NextResponse.json(
         {
@@ -58,138 +64,305 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle successful Stripe Checkout payment
+    // Handle successful Checkout session
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
+      const session =
+        event.data.object as Stripe.Checkout.Session;
 
-      const pendingRegistrationId =
-        session.metadata?.pendingRegistrationId;
-
-      if (!pendingRegistrationId) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Pending registration ID not found",
-          },
-          { status: 400 },
-        );
-      }
-
-      // Find pending registration
-      const pendingRegistration =
-        await prisma.pendingSummerCampRegistration.findUnique({
-          where: {
-            id: pendingRegistrationId,
-          },
-        });
-
-      // Already processed
-      if (!pendingRegistration) {
+      // Make sure payment is actually completed
+      if (session.payment_status !== "paid") {
         return NextResponse.json(
           {
             success: true,
-            message: "Pending registration already processed",
+            message: "Payment is not completed",
           },
           { status: 200 },
         );
       }
 
-      // Create permanent registration and remove pending one
-      const summerRegistration = await prisma.$transaction(
-        async (tx) => {
-          const registration =
-            await tx.summerCampRegistration.create({
-              data: {
-                parentGuardianName:
-                  pendingRegistration.parentGuardianName,
+      const pendingRegistrationId =
+        session.metadata?.pendingRegistrationId;
 
-                relationToChild:
-                  pendingRegistration.relationToChild,
+      const campType = session.metadata?.campType;
 
-                email: pendingRegistration.email,
+      if (!pendingRegistrationId) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Pending registration ID not found",
+          },
+          { status: 400 },
+        );
+      }
 
-                countryCode:
-                  pendingRegistration.countryCode,
+      if (
+        campType !== "SUMMER" &&
+        campType !== "WINTER"
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Invalid camp type",
+          },
+          { status: 400 },
+        );
+      }
 
-                contactNumber:
-                  pendingRegistration.contactNumber,
+      // =========================
+      // SUMMER CAMP
+      // =========================
 
-                secondaryCountryCode:
-                  pendingRegistration.secondaryCountryCode,
+      if (campType === "SUMMER") {
+        const pendingRegistration =
+          await prisma.pendingSummerCampRegistration.findUnique(
+            {
+              where: {
+                id: pendingRegistrationId,
+              },
+            },
+          );
 
-                secondaryContactNumber:
-                  pendingRegistration.secondaryContactNumber,
+        // Already processed
+        if (!pendingRegistration) {
+          return NextResponse.json(
+            {
+              success: true,
+              message:
+                "Summer registration already processed",
+            },
+            { status: 200 },
+          );
+        }
 
-                address:
-                  pendingRegistration.address,
+        const summerRegistration =
+          await prisma.$transaction(async (tx) => {
+            const registration =
+              await tx.summerCampRegistration.create({
+                data: {
+                  registrationId:
+                    pendingRegistration.registrationId,
 
-                city:
-                  pendingRegistration.city,
+                  parentGuardianName:
+                    pendingRegistration.parentGuardianName,
 
-                postalCode:
-                  pendingRegistration.postalCode,
+                  relationToChild:
+                    pendingRegistration.relationToChild,
 
-                country:
-                  pendingRegistration.country,
+                  email:
+                    pendingRegistration.email,
 
-                message:
-                  pendingRegistration.message,
+                  countryCode:
+                    pendingRegistration.countryCode,
 
-                children: pendingRegistration.children as any,
+                  contactNumber:
+                    pendingRegistration.contactNumber,
 
-                subtotal:
-                  pendingRegistration.subtotal,
+                  secondaryCountryCode:
+                    pendingRegistration.secondaryCountryCode,
 
-                siblingDiscount:
-                  pendingRegistration.siblingDiscount,
+                  secondaryContactNumber:
+                    pendingRegistration.secondaryContactNumber,
 
-                processingFee:
-                  pendingRegistration.processingFee,
+                  address:
+                    pendingRegistration.address,
 
-                totalAmount:
-                  pendingRegistration.totalAmount,
+                  city:
+                    pendingRegistration.city,
 
-                paymentStatus: "PAID",
+                  postalCode:
+                    pendingRegistration.postalCode,
 
-                stripeCheckoutSessionId:
-                  session.id,
+                  country:
+                    pendingRegistration.country,
+
+                  message:
+                    pendingRegistration.message,
+
+                  children:
+                    pendingRegistration.children as any,
+
+                  subtotal:
+                    pendingRegistration.subtotal,
+
+                  siblingDiscount:
+                    pendingRegistration.siblingDiscount,
+
+                  processingFee:
+                    pendingRegistration.processingFee,
+
+                  totalAmount:
+                    pendingRegistration.totalAmount,
+
+                  paymentStatus: "PAID",
+
+                  stripeCheckoutSessionId:
+                    session.id,
+                },
+              });
+
+            await tx.pendingSummerCampRegistration.delete({
+              where: {
+                id: pendingRegistration.id,
               },
             });
 
-          await tx.pendingSummerCampRegistration.delete({
-            where: {
-              id: pendingRegistration.id,
-            },
+            return registration;
           });
 
-          return registration;
-        },
-      );
-
-      console.log(
-        "Summer camp registration created:",
-        summerRegistration.id,
-      );
-
-      // Send emails
-      try {
-        await sendSummerCampRegistrationNotification(
-          summerRegistration,
+        console.log(
+          "Summer registration created:",
+          summerRegistration.registrationId,
         );
 
-        await sendSummerCampParentConfirmation(
-          summerRegistration,
-        );
+        try {
+          await sendCampRegistrationNotification({
+            ...summerRegistration,
+            campType: "SUMMER",
+          });
+
+          await sendCampParentConfirmation({
+            ...summerRegistration,
+            campType: "SUMMER",
+          });
+
+          console.log(
+            "Summer camp emails sent successfully",
+          );
+        } catch (emailError) {
+          console.error(
+            "Summer camp email failed:",
+            emailError,
+          );
+        }
+      }
+
+      // =========================
+      // WINTER CAMP
+      // =========================
+
+      if (campType === "WINTER") {
+        const pendingRegistration =
+          await prisma.pendingWinterCampRegistration.findUnique(
+            {
+              where: {
+                id: pendingRegistrationId,
+              },
+            },
+          );
+
+        // Already processed
+        if (!pendingRegistration) {
+          return NextResponse.json(
+            {
+              success: true,
+              message:
+                "Winter registration already processed",
+            },
+            { status: 200 },
+          );
+        }
+
+        const winterRegistration =
+          await prisma.$transaction(async (tx) => {
+            const registration =
+              await tx.winterCampRegistration.create({
+                data: {
+                  registrationId:
+                    pendingRegistration.registrationId,
+
+                  parentGuardianName:
+                    pendingRegistration.parentGuardianName,
+
+                  relationToChild:
+                    pendingRegistration.relationToChild,
+
+                  email:
+                    pendingRegistration.email,
+
+                  countryCode:
+                    pendingRegistration.countryCode,
+
+                  contactNumber:
+                    pendingRegistration.contactNumber,
+
+                  secondaryCountryCode:
+                    pendingRegistration.secondaryCountryCode,
+
+                  secondaryContactNumber:
+                    pendingRegistration.secondaryContactNumber,
+
+                  address:
+                    pendingRegistration.address,
+
+                  city:
+                    pendingRegistration.city,
+
+                  postalCode:
+                    pendingRegistration.postalCode,
+
+                  country:
+                    pendingRegistration.country,
+
+                  message:
+                    pendingRegistration.message,
+
+                  children:
+                    pendingRegistration.children as any,
+
+                  subtotal:
+                    pendingRegistration.subtotal,
+
+                  siblingDiscount:
+                    pendingRegistration.siblingDiscount,
+
+                  processingFee:
+                    pendingRegistration.processingFee,
+
+                  totalAmount:
+                    pendingRegistration.totalAmount,
+
+                  paymentStatus: "PAID",
+
+                  stripeCheckoutSessionId:
+                    session.id,
+                },
+              });
+
+            await tx.pendingWinterCampRegistration.delete({
+              where: {
+                id: pendingRegistration.id,
+              },
+            });
+
+            return registration;
+          });
 
         console.log(
-          "Summer camp emails sent successfully",
+          "Winter registration created:",
+          winterRegistration.registrationId,
         );
-      } catch (emailError) {
-        // Email failure should not undo successful payment/registration
-        console.error(
-          "Summer camp email failed:",
-          emailError,
-        );
+
+        try {
+          await sendCampRegistrationNotification({
+            ...winterRegistration,
+            campType: "WINTER",
+          });
+
+          await sendCampParentConfirmation({
+            ...winterRegistration,
+            campType: "WINTER",
+          });
+
+          console.log(
+            "Winter camp emails sent successfully",
+          );
+        } catch (emailError) {
+          console.error(
+            "Winter camp email failed:",
+            emailError,
+          );
+        }
       }
     }
 
@@ -201,12 +374,16 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
-    console.error("Stripe webhook error:", error);
+    console.error(
+      "Stripe webhook error:",
+      error,
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Webhook processing failed",
+        message:
+          "Webhook processing failed",
       },
       { status: 500 },
     );
