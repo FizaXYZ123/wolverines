@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { AuthError, requireAdmin } from "@/app/lib/auth";
 import { stripe } from "@/app/lib/stripe";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { saveEmail } from "@/app/lib/save-email";
 
 // find all
 export async function GET(request: NextRequest) {
@@ -75,8 +76,9 @@ export async function POST(request: NextRequest) {
 
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalizedEmail)) {
       return NextResponse.json(
         {
           message: "Invalid email address",
@@ -84,6 +86,8 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    await saveEmail(normalizedEmail);
 
     // Validate amount
     const donationAmount = Number(amount);
@@ -129,7 +133,7 @@ export async function POST(request: NextRequest) {
       data: {
         donorName: donorName.trim(),
 
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
 
         countryCode: countryCode.trim(),
 
@@ -207,7 +211,7 @@ export async function POST(request: NextRequest) {
         message: "Pending donation created successfully",
 
         data: {
-          donationId: updatedPendingDonation.id,
+          id: updatedPendingDonation.id,
 
           amount: finalAmount,
 

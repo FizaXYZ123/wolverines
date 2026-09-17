@@ -5,6 +5,7 @@ import { campRegistrationSchema } from "@/app/validations/camp-validation";
 import { calculateCampFee } from "@/app/lib/camp-fee";
 import { stripe } from "@/app/lib/stripe";
 import { generateRegistrationId } from "@/app/lib/registration-id";
+import { saveEmail } from "@/app/lib/save-email";
 
 // find all
 
@@ -110,6 +111,12 @@ export async function POST(request: NextRequest) {
         { status: 403 },
       );
     }
+
+    // Save email if it does not already exist
+    const normalizedEmail = email.trim().toLowerCase();
+
+    await saveEmail(normalizedEmail);
+
     // Calculate fee using admin-configured pricing
     const { subtotal, siblingDiscount, processingFee, totalAmount } =
       calculateCampFee(children, pricing);
@@ -121,7 +128,7 @@ export async function POST(request: NextRequest) {
           registrationId: generateRegistrationId(),
           parentGuardianName,
           relationToChild,
-          email,
+          email: normalizedEmail,
           countryCode,
           contactNumber,
           secondaryCountryCode: secondaryCountryCode || null,
@@ -143,7 +150,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
 
-      customer_email: email,
+      customer_email: normalizedEmail,
 
       line_items: [
         {

@@ -330,3 +330,38 @@ model JoinOurClub {
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
 }
+
+model EmailContact {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum EmailSendStatus {
+  SENT
+  FAILED
+  PARTIAL
+}
+
+enum EmailRecipientSource {
+  DATABASE
+  CSV
+  DIRECT
+}
+
+model EmailHistory {
+  id              String               @id @default(cuid())
+  recipients      Json
+  failedRecipients Json?
+  subject         String
+  htmlContent     String
+  source          EmailRecipientSource
+  status          EmailSendStatus
+  totalRecipients Int
+  sentCount       Int                  @default(0)
+  failedCount     Int                  @default(0)
+  errorMessage    String?
+  sentAt          DateTime             @default(now())
+  createdAt       DateTime             @default(now())
+}

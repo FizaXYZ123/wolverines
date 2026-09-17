@@ -499,32 +499,99 @@ export async function sendJoinOurClubAdminNotification(joinOurClub: {
     </div>
   `;
 
-  const response = await fetch(
-    "https://api.brevo.com/v3/smtp/email",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apiKey,
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": apiKey,
+    },
+    body: JSON.stringify({
+      sender: {
+        name: process.env.BREVO_SENDER_NAME || "The Wolverines",
+        email: senderEmail,
       },
-      body: JSON.stringify({
-        sender: {
-          name: process.env.BREVO_SENDER_NAME || "The Wolverines",
-          email: senderEmail,
+      to: [
+        {
+          email: adminEmail,
         },
-        to: [
-          {
-            email: adminEmail,
-          },
-        ],
-        subject: "New Join Our Club Request",
-        htmlContent,
-      }),
-    }
-  );
+      ],
+      subject: "New Join Our Club Request",
+      htmlContent,
+    }),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Join Our Club email failed: ${errorText}`);
   }
+}
+
+export async function sendDynamicEmail({
+  recipients,
+  subject,
+  htmlContent,
+}: {
+  recipients: string[];
+  subject: string;
+  htmlContent: string;
+}) {
+  const apiKey = process.env.BREVO_API_KEY;
+  const senderEmail = process.env.BREVO_SENDER_EMAIL;
+  const senderName = process.env.BREVO_SENDER_NAME || "The Wolverines";
+
+  if (!apiKey || !senderEmail) {
+    throw new Error("Brevo email configuration is missing");
+  }
+
+  let sentCount = 0;
+  const failedRecipients: string[] = [];
+
+  for (const email of recipients) {
+    try {
+      const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": apiKey,
+        },
+        body: JSON.stringify({
+          sender: {
+            name: senderName,
+            email: senderEmail,
+          },
+          to: [
+            {
+              email,
+            },
+          ],
+          subject,
+          htmlContent,
+        }),
+      });
+
+      const responseText = await response.text();
+
+      if (!response.ok) {
+        console.error(`Failed to send email to ${email}:`, responseText);
+
+        failedRecipients.push(email);
+        continue;
+      }
+
+      const responseData = JSON.parse(responseText);
+
+      // console.log(`Brevo email accepted for ${email}:`, responseData);
+
+      sentCount++;
+    } catch (error) {
+      console.error(`Error sending email to ${email}:`, error);
+
+      failedRecipients.push(email);
+    }
+  }
+
+  return {
+    sentCount,
+    failedRecipients,
+  };
 }

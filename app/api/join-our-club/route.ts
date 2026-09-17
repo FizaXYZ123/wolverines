@@ -3,6 +3,7 @@ import { requireAdmin, AuthError } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 import { NextResponse, NextRequest } from "next/server";
 import { sendJoinOurClubAdminNotification } from "@/app/lib/email";
+import { saveEmail } from "@/app/lib/save-email";
 
 // find all
 
@@ -23,10 +24,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      message: "join our club details fetched successfully",
-      data: joinOurClub,
-    },{status:200});
+    return NextResponse.json(
+      {
+        message: "join our club details fetched successfully",
+        data: joinOurClub,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json(
@@ -91,8 +95,9 @@ export async function POST(request: NextRequest) {
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!emailRegex.test(email.trim())) {
+    if (!emailRegex.test(normalizedEmail)) {
       return NextResponse.json(
         {
           message: "Invalid email address.",
@@ -100,6 +105,8 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    await saveEmail(normalizedEmail);
 
     // Primary phone validation
     const phoneNumber = parsePhoneNumberFromString(
@@ -162,7 +169,7 @@ export async function POST(request: NextRequest) {
         parentGuardianName: parentGuardianName.trim(),
         relationToChild: relationToChild.trim(),
 
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         countryCode: countryCode.trim(),
         contactNumber: contactNumber.trim(),
 
