@@ -6,6 +6,8 @@ import { prisma } from "@/app/lib/prisma";
 import {
   sendCampParentConfirmation,
   sendCampRegistrationNotification,
+  sendDonationThankYou,
+  sendDonationAdminNotification,
 } from "@/app/lib/email";
 
 export async function POST(request: NextRequest) {
@@ -13,8 +15,7 @@ export async function POST(request: NextRequest) {
     // Stripe webhook body must be read as raw text
     const body = await request.text();
 
-    const signature =
-      request.headers.get("stripe-signature");
+    const signature = request.headers.get("stripe-signature");
 
     if (!signature) {
       return NextResponse.json(
@@ -26,15 +27,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const webhookSecret =
-      process.env.STRIPE_WEBHOOK_SECRET;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     if (!webhookSecret) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Stripe webhook secret is not configured",
+          message: "Stripe webhook secret is not configured",
         },
         { status: 500 },
       );
@@ -44,16 +43,9 @@ export async function POST(request: NextRequest) {
 
     // Verify Stripe webhook signature
     try {
-      event = stripe.webhooks.constructEvent(
-        body,
-        signature,
-        webhookSecret,
-      );
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (error) {
-      console.error(
-        "Webhook signature verification failed:",
-        error,
-      );
+      console.error("Webhook signature verification failed:", error);
 
       return NextResponse.json(
         {
@@ -66,8 +58,7 @@ export async function POST(request: NextRequest) {
 
     // Handle successful Checkout session
     if (event.type === "checkout.session.completed") {
-      const session =
-        event.data.object as Stripe.Checkout.Session;
+      const session = event.data.object as Stripe.Checkout.Session;
 
       // Make sure payment is actually completed
       if (session.payment_status !== "paid") {
@@ -80,23 +71,28 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const pendingRegistrationId =
-        session.metadata?.pendingRegistrationId;
+      const pendingRegistrationId = session.metadata?.pendingRegistrationId;
 
       const campType = session.metadata?.campType;
 
-      if (!pendingRegistrationId) {
+      const pendingDonationId = session.metadata?.pendingDonationId;
+
+      const paymentType = session.metadata?.type;
+
+      // Validate camp payment metadata
+      if (paymentType !== "DONATION" && !pendingRegistrationId) {
         return NextResponse.json(
           {
             success: false,
-            message:
-              "Pending registration ID not found",
+            message: "Pending registration ID not found",
           },
           { status: 400 },
         );
       }
 
+      // Validate camp type
       if (
+        paymentType !== "DONATION" &&
         campType !== "SUMMER" &&
         campType !== "WINTER"
       ) {
@@ -109,106 +105,94 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Validate donation metadata
+      if (paymentType === "DONATION" && !pendingDonationId) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Pending donation ID not found",
+          },
+          { status: 400 },
+        );
+      }
+
       // =========================
       // SUMMER CAMP
       // =========================
 
       if (campType === "SUMMER") {
         const pendingRegistration =
-          await prisma.pendingSummerCampRegistration.findUnique(
-            {
-              where: {
-                id: pendingRegistrationId,
-              },
+          await prisma.pendingSummerCampRegistration.findUnique({
+            where: {
+              id: pendingRegistrationId,
             },
-          );
+          });
 
         // Already processed
         if (!pendingRegistration) {
           return NextResponse.json(
             {
               success: true,
-              message:
-                "Summer registration already processed",
+              message: "Summer registration already processed",
             },
             { status: 200 },
           );
         }
 
-        const summerRegistration =
-          await prisma.$transaction(async (tx) => {
-            const registration =
-              await tx.summerCampRegistration.create({
-                data: {
-                  registrationId:
-                    pendingRegistration.registrationId,
+        const summerRegistration = await prisma.$transaction(async (tx) => {
+          const registration = await tx.summerCampRegistration.create({
+            data: {
+              registrationId: pendingRegistration.registrationId,
 
-                  parentGuardianName:
-                    pendingRegistration.parentGuardianName,
+              parentGuardianName: pendingRegistration.parentGuardianName,
 
-                  relationToChild:
-                    pendingRegistration.relationToChild,
+              relationToChild: pendingRegistration.relationToChild,
 
-                  email:
-                    pendingRegistration.email,
+              email: pendingRegistration.email,
 
-                  countryCode:
-                    pendingRegistration.countryCode,
+              countryCode: pendingRegistration.countryCode,
 
-                  contactNumber:
-                    pendingRegistration.contactNumber,
+              contactNumber: pendingRegistration.contactNumber,
 
-                  secondaryCountryCode:
-                    pendingRegistration.secondaryCountryCode,
+              secondaryCountryCode: pendingRegistration.secondaryCountryCode,
 
-                  secondaryContactNumber:
-                    pendingRegistration.secondaryContactNumber,
+              secondaryContactNumber:
+                pendingRegistration.secondaryContactNumber,
 
-                  address:
-                    pendingRegistration.address,
+              address: pendingRegistration.address,
 
-                  city:
-                    pendingRegistration.city,
+              city: pendingRegistration.city,
 
-                  postalCode:
-                    pendingRegistration.postalCode,
+              postalCode: pendingRegistration.postalCode,
 
-                  country:
-                    pendingRegistration.country,
+              country: pendingRegistration.country,
 
-                  message:
-                    pendingRegistration.message,
+              message: pendingRegistration.message,
 
-                  children:
-                    pendingRegistration.children as any,
+              children: pendingRegistration.children as any,
 
-                  subtotal:
-                    pendingRegistration.subtotal,
+              subtotal: pendingRegistration.subtotal,
 
-                  siblingDiscount:
-                    pendingRegistration.siblingDiscount,
+              siblingDiscount: pendingRegistration.siblingDiscount,
 
-                  processingFee:
-                    pendingRegistration.processingFee,
+              processingFee: pendingRegistration.processingFee,
 
-                  totalAmount:
-                    pendingRegistration.totalAmount,
+              totalAmount: pendingRegistration.totalAmount,
 
-                  paymentStatus: "PAID",
+              paymentStatus: "PAID",
 
-                  stripeCheckoutSessionId:
-                    session.id,
-                },
-              });
-
-            await tx.pendingSummerCampRegistration.delete({
-              where: {
-                id: pendingRegistration.id,
-              },
-            });
-
-            return registration;
+              stripeCheckoutSessionId: session.id,
+            },
           });
+
+          await tx.pendingSummerCampRegistration.delete({
+            where: {
+              id: pendingRegistration.id,
+            },
+          });
+
+          return registration;
+        });
 
         console.log(
           "Summer registration created:",
@@ -226,14 +210,9 @@ export async function POST(request: NextRequest) {
             campType: "SUMMER",
           });
 
-          console.log(
-            "Summer camp emails sent successfully",
-          );
+          console.log("Summer camp emails sent successfully");
         } catch (emailError) {
-          console.error(
-            "Summer camp email failed:",
-            emailError,
-          );
+          console.error("Summer camp email failed:", emailError);
         }
       }
 
@@ -243,100 +222,77 @@ export async function POST(request: NextRequest) {
 
       if (campType === "WINTER") {
         const pendingRegistration =
-          await prisma.pendingWinterCampRegistration.findUnique(
-            {
-              where: {
-                id: pendingRegistrationId,
-              },
+          await prisma.pendingWinterCampRegistration.findUnique({
+            where: {
+              id: pendingRegistrationId,
             },
-          );
+          });
 
         // Already processed
         if (!pendingRegistration) {
           return NextResponse.json(
             {
               success: true,
-              message:
-                "Winter registration already processed",
+              message: "Winter registration already processed",
             },
             { status: 200 },
           );
         }
 
-        const winterRegistration =
-          await prisma.$transaction(async (tx) => {
-            const registration =
-              await tx.winterCampRegistration.create({
-                data: {
-                  registrationId:
-                    pendingRegistration.registrationId,
+        const winterRegistration = await prisma.$transaction(async (tx) => {
+          const registration = await tx.winterCampRegistration.create({
+            data: {
+              registrationId: pendingRegistration.registrationId,
 
-                  parentGuardianName:
-                    pendingRegistration.parentGuardianName,
+              parentGuardianName: pendingRegistration.parentGuardianName,
 
-                  relationToChild:
-                    pendingRegistration.relationToChild,
+              relationToChild: pendingRegistration.relationToChild,
 
-                  email:
-                    pendingRegistration.email,
+              email: pendingRegistration.email,
 
-                  countryCode:
-                    pendingRegistration.countryCode,
+              countryCode: pendingRegistration.countryCode,
 
-                  contactNumber:
-                    pendingRegistration.contactNumber,
+              contactNumber: pendingRegistration.contactNumber,
 
-                  secondaryCountryCode:
-                    pendingRegistration.secondaryCountryCode,
+              secondaryCountryCode: pendingRegistration.secondaryCountryCode,
 
-                  secondaryContactNumber:
-                    pendingRegistration.secondaryContactNumber,
+              secondaryContactNumber:
+                pendingRegistration.secondaryContactNumber,
 
-                  address:
-                    pendingRegistration.address,
+              address: pendingRegistration.address,
 
-                  city:
-                    pendingRegistration.city,
+              city: pendingRegistration.city,
 
-                  postalCode:
-                    pendingRegistration.postalCode,
+              postalCode: pendingRegistration.postalCode,
 
-                  country:
-                    pendingRegistration.country,
+              country: pendingRegistration.country,
 
-                  message:
-                    pendingRegistration.message,
+              message: pendingRegistration.message,
 
-                  children:
-                    pendingRegistration.children as any,
+              children: pendingRegistration.children as any,
 
-                  subtotal:
-                    pendingRegistration.subtotal,
+              subtotal: pendingRegistration.subtotal,
 
-                  siblingDiscount:
-                    pendingRegistration.siblingDiscount,
+              siblingDiscount: pendingRegistration.siblingDiscount,
 
-                  processingFee:
-                    pendingRegistration.processingFee,
+              processingFee: pendingRegistration.processingFee,
 
-                  totalAmount:
-                    pendingRegistration.totalAmount,
+              totalAmount: pendingRegistration.totalAmount,
 
-                  paymentStatus: "PAID",
+              paymentStatus: "PAID",
 
-                  stripeCheckoutSessionId:
-                    session.id,
-                },
-              });
-
-            await tx.pendingWinterCampRegistration.delete({
-              where: {
-                id: pendingRegistration.id,
-              },
-            });
-
-            return registration;
+              stripeCheckoutSessionId: session.id,
+            },
           });
+
+          await tx.pendingWinterCampRegistration.delete({
+            where: {
+              id: pendingRegistration.id,
+            },
+          });
+
+          return registration;
+        });
 
         console.log(
           "Winter registration created:",
@@ -354,15 +310,108 @@ export async function POST(request: NextRequest) {
             campType: "WINTER",
           });
 
-          console.log(
-            "Winter camp emails sent successfully",
+          console.log("Winter camp emails sent successfully");
+        } catch (emailError) {
+          console.error("Winter camp email failed:", emailError);
+        }
+      }
+
+      // =========================
+      // DONATION
+      // =========================
+
+      if (paymentType === "DONATION") {
+        const pendingDonationId = session.metadata?.pendingDonationId;
+
+        if (!pendingDonationId) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Pending donation ID not found",
+            },
+            { status: 400 },
           );
+        }
+
+        const pendingDonation = await prisma.pendingDonation.findFirst({
+          where: {
+            id: pendingDonationId,
+            stripeCheckoutSessionId: session.id,
+          },
+        });
+
+        // Already processed
+        if (!pendingDonation) {
+          return NextResponse.json(
+            {
+              success: true,
+              message: "Donation already processed",
+            },
+            { status: 200 },
+          );
+        }
+
+        const donation = await prisma.$transaction(async (tx) => {
+          const createdDonation = await tx.donation.create({
+            data: {
+              donorName: pendingDonation.donorName,
+
+              email: pendingDonation.email,
+
+              countryCode: pendingDonation.countryCode,
+
+              contactNumber: pendingDonation.contactNumber,
+
+              amount: pendingDonation.amount,
+
+              currency: pendingDonation.currency,
+
+              acknowledgement: pendingDonation.acknowledgement,
+
+              paymentStatus: "PAID",
+
+              stripeCheckoutSessionId: session.id,
+            },
+          });
+
+          await tx.pendingDonation.delete({
+            where: {
+              id: pendingDonation.id,
+            },
+          });
+
+          return createdDonation;
+        });
+
+        // Send thank-you email to donor
+        try {
+          await sendDonationThankYou({
+            donorName: donation.donorName,
+            email: donation.email,
+            amount: donation.amount,
+            currency: donation.currency,
+          });
+        } catch (emailError) {
+          console.error("Failed to send donation thank-you email:", emailError);
+        }
+
+        // admin notification
+        try {
+          await sendDonationAdminNotification({
+            donorName: donation.donorName,
+            email: donation.email,
+            countryCode: donation.countryCode,
+            contactNumber: donation.contactNumber,
+            amount: donation.amount,
+          });
         } catch (emailError) {
           console.error(
-            "Winter camp email failed:",
+            "Failed to send donation admin notification:",
             emailError,
           );
         }
+
+        console.log("Donation created:", donation.id);
       }
     }
 
@@ -374,16 +423,12 @@ export async function POST(request: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
-    console.error(
-      "Stripe webhook error:",
-      error,
-    );
+    console.error("Stripe webhook error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Webhook processing failed",
+        message: "Webhook processing failed",
       },
       { status: 500 },
     );
