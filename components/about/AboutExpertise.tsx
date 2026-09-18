@@ -157,8 +157,8 @@ export default function AboutExpertise() {
   }, []);
 
   return (
-    <div className="w-full bg-white flex justify-center py-12 sm:py-16 lg:py-24 overflow-hidden">
-      <section className="w-full max-w-[1480px] px-4 sm:px-6 lg:px-12 xl:px-16">
+    <section className="w-full bg-white py-12 sm:py-16 lg:py-20 overflow-hidden">
+      <div className="site-container">
         {/* Section Tag Header */}
         <div
           ref={headerRef}
@@ -264,7 +264,7 @@ export default function AboutExpertise() {
             }
           />
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

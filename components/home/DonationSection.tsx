@@ -33,12 +33,11 @@ export default function DonationSection() {
   }, []);
 
   return (
-    <div className="w-full bg-white flex justify-center">
-      <section
-        ref={sectionRef}
-        className="relative w-full max-w-[1480px] bg-white text-neutral-900 py-6 sm:py-8 lg:py-11 select-none overflow-hidden"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <section
+      ref={sectionRef}
+      className="relative w-full bg-white text-neutral-900 py-16 lg:py-20 select-none overflow-hidden"
+    >
+      <div className="site-container relative">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
             {/* Left Column: Featured Event / Crowd Photo (Slides in from LEFT) */}
             <div
@@ -48,13 +47,13 @@ export default function DonationSection() {
                   : "opacity-0 -translate-x-16 sm:-translate-x-24 scale-95"
               }`}
             >
-              <div className="group relative w-full h-[280px] sm:h-[380px] md:h-[440px] lg:h-[460px] rounded-2xl sm:rounded-[24px] overflow-hidden">
+              <div className="group relative w-full aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl">
                 <Image
                   src="/images/donation.jpg"
                   alt="Wolverines Field Hockey Supporters and Young Athletes"
                   fill
                   priority
-                  className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                 />
               </div>
             </div>
@@ -164,6 +163,5 @@ export default function DonationSection() {
           </div>
         </div>
       </section>
-    </div>
   );
 }

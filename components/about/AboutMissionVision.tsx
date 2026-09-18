@@ -26,11 +26,11 @@ export default function AboutMissionVision() {
   }, []);
 
   return (
-    <div className="w-full bg-white flex justify-center py-12 sm:py-16 lg:py-24 overflow-hidden">
-      <section
-        ref={sectionRef}
-        className="w-full max-w-[1480px] px-4 sm:px-6 lg:px-12 xl:px-16"
-      >
+    <section
+      ref={sectionRef}
+      className="w-full bg-white py-12 sm:py-16 lg:py-20 overflow-hidden"
+    >
+      <div className="site-container">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-12 xl:gap-16 items-center">
           {/* Left Column: Text Content */}
           <div
@@ -127,7 +127,7 @@ export default function AboutMissionVision() {
 
               {/* Overlapping Centered Bottom Image: Sticks Huddle Close-up */}
               <div
-                className={`absolute left-1/2 -translate-x-1/2 -bottom-18 sm:-bottom-18 md:-bottom-20 w-[54%] sm:w-[48%] md:w-[46%] max-w-[260px] sm:max-w-[275px] aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-2 sm:border-2 border-white z-10 transition-all duration-[1000ms] delay-300 ease-[cubic-bezier(0.34,1.4,0.64,1)] ${
+                className={`absolute left-1/2 -translate-x-1/2 -bottom-16 sm:-bottom-16 md:-bottom-20 w-[54%] sm:w-[48%] md:w-[46%] max-w-[260px] sm:max-w-[275px] aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-2 sm:border-2 border-white z-10 transition-all duration-[1000ms] delay-300 ease-[cubic-bezier(0.34,1.4,0.64,1)] ${
                   isVisible
                     ? "opacity-100 scale-100 translate-y-0"
                     : "opacity-0 scale-[0.82] translate-y-8"
@@ -144,7 +144,7 @@ export default function AboutMissionVision() {
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

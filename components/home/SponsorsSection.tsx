@@ -79,12 +79,11 @@ export default function SponsorsSection() {
   }, []);
 
   return (
-    <div className="w-full bg-white flex justify-center">
-      <section
-        ref={sectionRef}
-        className="relative w-full max-w-[1480px] bg-white text-neutral-900 py-10 sm:py-14 lg:py-15 select-none overflow-hidden"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <section
+      ref={sectionRef}
+      className="relative w-full bg-white text-neutral-900 py-16 lg:py-20 select-none overflow-hidden"
+    >
+      <div className="site-container relative">
           {/* Top Header Area */}
           <div className="flex flex-col items-start">
             {/* Section Tag with Red Accent Bar */}
@@ -131,14 +130,16 @@ export default function SponsorsSection() {
               {[...sponsors, ...sponsors].map((sponsor, idx) => (
                 <div
                   key={`${sponsor.name}-${idx}`}
-                  className="flex-shrink-0 flex items-center justify-center h-20 sm:h-24 lg:h-28 px-4 transition-transform duration-300 hover:scale-110 select-none cursor-pointer"
+                  className="flex-shrink-0 flex items-center justify-center h-16 sm:h-20 w-32 sm:w-44 px-3 transition-transform duration-300 hover:scale-105 select-none cursor-pointer"
                 >
                   <Image
                     src={sponsor.logo}
                     alt={`${sponsor.name} Logo`}
                     width={sponsor.width}
                     height={sponsor.height}
-                    className={sponsor.className}
+                    className={`max-h-full max-w-full object-contain ${
+                      sponsor.name.includes("Khalsa") ? "rounded-full" : ""
+                    }`}
                   />
                 </div>
               ))}
@@ -146,6 +147,5 @@ export default function SponsorsSection() {
           </div>
         </div>
       </section>
-    </div>
   );
 }

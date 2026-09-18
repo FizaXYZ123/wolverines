@@ -107,12 +107,11 @@ export default function TeamsSection() {
   }, []);
 
   return (
-    <div className="w-full bg-white flex justify-center">
-      <section
-        ref={sectionRef}
-        className="relative w-full max-w-[1480px] bg-white text-neutral-900 py-6 sm:py-8 lg:py-12 select-none overflow-hidden"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <section
+      ref={sectionRef}
+      className="relative w-full bg-white text-neutral-900 py-16 lg:py-20 select-none overflow-hidden"
+    >
+      <div className="site-container relative">
           {/* Section Tag with Red Accent Bar */}
           <div
             className={`flex items-center justify-center gap-2.5 sm:gap-3 transition-all duration-700 delay-100 ease-[cubic-bezier(0.16,1,0.3,1)] ${
@@ -144,7 +143,7 @@ export default function TeamsSection() {
               {[...teams, ...teams].map((team, idx) => (
                 <div
                   key={`${team.name}-${idx}`}
-                  className="flex-shrink-0 flex items-center justify-center h-20 sm:h-24 lg:h-28 px-4 transition-transform duration-300 hover:scale-110 select-none cursor-pointer"
+                  className="flex-shrink-0 flex items-center justify-center h-16 sm:h-20 w-28 sm:w-36 px-2 transition-transform duration-300 hover:scale-105 select-none cursor-pointer"
                   title={team.name}
                 >
                   <Image
@@ -152,7 +151,11 @@ export default function TeamsSection() {
                     alt={`${team.name} Logo`}
                     width={team.width}
                     height={team.height}
-                    className={team.className}
+                    className={`max-h-full max-w-full object-contain ${
+                      team.name.includes("Chilliwack") || team.name.includes("United Hawks")
+                        ? "rounded-full"
+                        : ""
+                    }`}
                   />
                 </div>
               ))}
@@ -160,6 +163,5 @@ export default function TeamsSection() {
           </div>
         </div>
       </section>
-    </div>
   );
 }

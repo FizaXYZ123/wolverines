@@ -66,7 +66,7 @@ export default function BlogsPage() {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         {/* Page Header */}
         <div className="flex flex-col items-center text-center mb-10 sm:mb-14 animate-blog-header">
           <h1
@@ -138,12 +138,12 @@ export default function BlogsPage() {
                 className="bg-white rounded-2xl sm:rounded-3xl border border-neutral-200/90 overflow-hidden shadow-xs hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col group h-full"
               >
                 {/* Card Image */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100">
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100">
                   <Image
                     src={post.image}
                     alt={post.title}
                     fill
-                    className="object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
+                    className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 </div>
