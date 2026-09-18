@@ -74,7 +74,7 @@ export default function AdminLayout({
       return { title: "Camps Pricing", subtitle: "Configure summer & winter camp fees, discounts, and toggles" };
     }
     if (pathname.startsWith("/admin/join-requests")) {
-      return { title: "Join Our Club Requests", subtitle: "Review and process new club membership applications" };
+      return { title: "Join Our Club Requests", subtitle: "Review and process requests to join the club" };
     }
     if (pathname.startsWith("/admin/emails")) {
       return { title: "Email Marketing & History", subtitle: "Compose dynamic campaigns and inspect delivery history" };

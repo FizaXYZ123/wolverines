@@ -9,12 +9,8 @@ import {
   DollarSign,
   Mail,
   Phone,
-  CheckCircle2,
-  Clock,
-  ShieldAlert,
   RefreshCw,
   Loader2,
-  CreditCard,
   UserCheck,
 } from "lucide-react";
 import { adminFetch, formatCurrency, formatDate, formatDateTime } from "@/app/lib/admin-api";
@@ -172,7 +168,7 @@ export default function DonationsPage() {
                   <th className="py-4 px-6">Contact Info</th>
                   <th className="py-4 px-6 text-right">Amount</th>
                   <th className="py-4 px-6">Acknowledgement</th>
-                  <th className="py-4 px-6">Status / Date</th>
+                  <th className="py-4 px-6">Date</th>
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
@@ -213,21 +209,17 @@ export default function DonationsPage() {
                       )}
                     </td>
                     <td className="py-4 px-6">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-500/30">
-                        <CheckCircle2 className="h-3 w-3" />
-                        {d.paymentStatus || "PAID"}
-                      </span>
-                      <p className="text-[11px] text-neutral-500 mt-1">
+                      <div className="text-xs text-neutral-300 font-medium">
                         {formatDate(d.createdAt)}
-                      </p>
+                      </div>
                     </td>
                     <td className="py-4 px-6 text-right">
                       <button
                         onClick={() => setSelectedDonation(d)}
-                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 hover:text-white border border-white/10 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 hover:text-white border border-white/10 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                        title="View Details"
                       >
                         <Eye className="h-3.5 w-3.5" />
-                        Details
                       </button>
                     </td>
                   </tr>

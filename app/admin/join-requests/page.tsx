@@ -2,18 +2,13 @@
 
 import { useEffect, useState } from "react";
 import {
-  UserPlus,
   Search,
-  Download,
   Eye,
   Mail,
   Phone,
-  Calendar,
   MapPin,
   RefreshCw,
   Loader2,
-  Users,
-  MessageSquare,
 } from "lucide-react";
 import { adminFetch, formatDate, formatDateTime } from "@/app/lib/admin-api";
 import DetailModal from "@/components/admin/DetailModal";
@@ -52,22 +47,6 @@ export default function JoinRequestsPage() {
     );
   });
 
-  const exportCSV = () => {
-    if (filteredRequests.length === 0) return;
-    let csv = "Child Name,DOB,Gender,Parent Name,Relation,Email,Phone,Secondary Contact,Secondary Relation,Address,City,Postal,Country,Message,Submitted At\n";
-    filteredRequests.forEach((r) => {
-      csv += `"${r.childName || ""}","${r.dateOfBirth || ""}","${r.gender || ""}","${r.parentGuardianName || ""}","${r.relationToChild || ""}","${r.email || ""}","${r.countryCode || ""}${r.contactNumber || ""}","${r.secondaryCountryCode || ""}${r.secondaryContactNumber || ""}","${r.secondaryRelationToChild || ""}","${r.address || ""}","${r.city || ""}","${r.postalCode || ""}","${r.country || ""}","${(r.message || "").replace(/"/g, '""')}","${r.createdAt || ""}"\n`;
-    });
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `join_requests_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Header & Search */}
@@ -92,15 +71,6 @@ export default function JoinRequestsPage() {
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
-
-          <button
-            onClick={exportCSV}
-            disabled={filteredRequests.length === 0}
-            className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 hover:text-white flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-40"
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
-          </button>
         </div>
       </div>
 
@@ -114,7 +84,7 @@ export default function JoinRequestsPage() {
             </div>
           ) : filteredRequests.length === 0 ? (
             <div className="py-16 text-center text-neutral-500 text-sm">
-              No club membership applications found.
+              No club join requests found.
             </div>
           ) : (
             <table className="w-full text-left text-xs">
@@ -136,14 +106,13 @@ export default function JoinRequestsPage() {
                       <div className="font-bold text-white text-sm">
                         {r.childName}
                       </div>
-                      <div className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-2">
-                        {r.gender && (
+                      {r.gender && (
+                        <div className="text-[11px] text-neutral-400 mt-0.5">
                           <span className="px-1.5 py-0.5 rounded bg-white/5 uppercase text-[10px]">
                             {r.gender}
                           </span>
-                        )}
-                        <span>DOB: {formatDate(r.dateOfBirth)}</span>
-                      </div>
+                        </div>
+                      )}
                     </td>
 
                     {/* Parent Name */}
@@ -187,10 +156,10 @@ export default function JoinRequestsPage() {
                     <td className="py-4 px-6 text-right">
                       <button
                         onClick={() => setSelectedRequest(r)}
-                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 hover:text-white border border-white/10 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 hover:text-white border border-white/10 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                        title="View Details"
                       >
                         <Eye className="h-3.5 w-3.5" />
-                        View File
                       </button>
                     </td>
                   </tr>
