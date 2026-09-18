@@ -65,23 +65,27 @@ export default function AdminDashboardPage() {
 
       const summerData = Array.isArray(summerRes.data) ? summerRes.data : [];
       const winterData = Array.isArray(winterRes.data) ? winterRes.data : [];
-      const donationData = Array.isArray(donationsRes.data) ? donationsRes.data : [];
-      const inquiryData = Array.isArray(inquiriesRes.data) ? inquiriesRes.data : [];
+      const donationData = Array.isArray(donationsRes.data)
+        ? donationsRes.data
+        : [];
+      const inquiryData = Array.isArray(inquiriesRes.data)
+        ? inquiriesRes.data
+        : [];
       const eventsData = Array.isArray(eventsRes.data) ? eventsRes.data : [];
       const blogsData = Array.isArray(blogsRes.data) ? blogsRes.data : [];
       const joinData = Array.isArray(joinRes.data) ? joinRes.data : [];
 
       const summerTotal = summerData.reduce(
         (sum: number, item: any) => sum + parseFloat(item.totalAmount || 0),
-        0
+        0,
       );
       const winterTotal = winterData.reduce(
         (sum: number, item: any) => sum + parseFloat(item.totalAmount || 0),
-        0
+        0,
       );
       const donationTotal = donationData.reduce(
         (sum: number, item: any) => sum + parseFloat(item.amount || 0),
-        0
+        0,
       );
 
       setStats({
@@ -125,7 +129,8 @@ export default function AdminDashboardPage() {
               Wolverines Overview
             </h2>
             <p className="mt-1 text-sm text-neutral-400 max-w-xl">
-              Monitor camp registrations, revenue, donor contributions, schedule events, publish blogs, and review enquiries.
+              Monitor camp registrations, revenue, donor contributions, schedule
+              events, publish blogs, and review enquiries.
             </p>
           </div>
 
@@ -135,7 +140,9 @@ export default function AdminDashboardPage() {
               disabled={isLoading}
               className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 hover:text-white flex items-center gap-2 transition-colors cursor-pointer"
             >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
               Refresh Data
             </button>
             <Link
@@ -223,8 +230,12 @@ export default function AdminDashboardPage() {
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs text-neutral-400 font-medium">Enquiries</p>
-                <p className="text-lg font-bold text-white">{stats.inquiryCount}</p>
+                <p className="text-xs text-neutral-400 font-medium">
+                  Enquiries
+                </p>
+                <p className="text-lg font-bold text-white">
+                  {stats.inquiryCount}
+                </p>
               </div>
             </Link>
 
@@ -237,7 +248,9 @@ export default function AdminDashboardPage() {
               </div>
               <div>
                 <p className="text-xs text-neutral-400 font-medium">Events</p>
-                <p className="text-lg font-bold text-white">{stats.eventsCount}</p>
+                <p className="text-lg font-bold text-white">
+                  {stats.eventsCount}
+                </p>
               </div>
             </Link>
 
@@ -250,7 +263,9 @@ export default function AdminDashboardPage() {
               </div>
               <div>
                 <p className="text-xs text-neutral-400 font-medium">Blogs</p>
-                <p className="text-lg font-bold text-white">{stats.blogsCount}</p>
+                <p className="text-lg font-bold text-white">
+                  {stats.blogsCount}
+                </p>
               </div>
             </Link>
 
@@ -259,9 +274,15 @@ export default function AdminDashboardPage() {
                 <DollarSign className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs text-neutral-400 font-medium">Total Revenue</p>
+                <p className="text-xs text-neutral-400 font-medium">
+                  Total Revenue
+                </p>
                 <p className="text-sm sm:text-base font-bold text-emerald-400 truncate">
-                  {formatCurrency(stats.summerRevenue + stats.winterRevenue + stats.donationTotal)}
+                  {formatCurrency(
+                    stats.summerRevenue +
+                      stats.winterRevenue +
+                      stats.donationTotal,
+                  )}
                 </p>
               </div>
             </div>
@@ -292,7 +313,10 @@ export default function AdminDashboardPage() {
             {isLoading ? (
               <div className="space-y-3 py-3">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-white/5 animate-pulse">
+                  <div
+                    key={i}
+                    className="flex items-center justify-between py-2 border-b border-white/5 animate-pulse"
+                  >
                     <div className="space-y-1.5 flex-1 pr-4">
                       <div className="h-3.5 w-32 bg-white/10 rounded" />
                       <div className="h-2.5 w-20 bg-white/5 rounded" />
@@ -362,7 +386,10 @@ export default function AdminDashboardPage() {
             {isLoading ? (
               <div className="space-y-3 py-3">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-white/5 animate-pulse">
+                  <div
+                    key={i}
+                    className="flex items-center justify-between py-2 border-b border-white/5 animate-pulse"
+                  >
                     <div className="space-y-1.5 flex-1 pr-4">
                       <div className="h-3.5 w-28 bg-white/10 rounded" />
                       <div className="h-2.5 w-16 bg-white/5 rounded" />

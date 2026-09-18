@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -99,9 +100,15 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }: AdminSidebar
     <div className="flex h-full flex-col bg-[#0f0f0f] border-r border-white/10 text-white select-none">
       {/* Brand Header */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
-        <Link href="/admin" className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#D32F2F] to-[#991b1b] flex items-center justify-center shadow-lg shadow-red-950/40">
-            <Shield className="h-5 w-5 text-white" />
+        <Link href="/admin" className="flex items-center gap-3 group">
+          <div className="h-10 w-10 flex items-center justify-center shrink-0">
+            <Image
+              src="/icon.png"
+              alt="Wolverines Logo"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain drop-shadow-[0_2px_8px_rgba(211,47,47,0.3)] transition-transform duration-200 group-hover:scale-105"
+            />
           </div>
           <div>
             <h1 className="font-black tracking-wider text-base uppercase bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent">

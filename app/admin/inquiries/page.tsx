@@ -68,7 +68,9 @@ export default function GeneralEnquiriesPage() {
             className="p-2.5 rounded-xl bg-[#141414] border border-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
             title="Refresh list"
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
           </button>
         </div>
       </div>
@@ -91,7 +93,9 @@ export default function GeneralEnquiriesPage() {
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center text-neutral-400">
               <Loader2 className="h-8 w-8 animate-spin text-[#D32F2F] mb-3" />
-              <p className="text-xs uppercase tracking-wider font-semibold">Loading enquiries...</p>
+              <p className="text-xs uppercase tracking-wider font-semibold">
+                Loading enquiries...
+              </p>
             </div>
           ) : filteredList.length === 0 ? (
             <div className="py-16 text-center text-neutral-500 text-sm">
@@ -110,7 +114,10 @@ export default function GeneralEnquiriesPage() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredList.map((item) => (
-                  <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr
+                    key={item.id}
+                    className="hover:bg-white/[0.02] transition-colors"
+                  >
                     {/* Full Name */}
                     <td className="py-4 px-6">
                       <div className="font-bold text-white text-sm">
@@ -220,7 +227,8 @@ export default function GeneralEnquiriesPage() {
                     href={`tel:${selectedInquiry.countryCode}${selectedInquiry.contactNumber}`}
                     className="hover:text-white transition-colors"
                   >
-                    {selectedInquiry.countryCode} {selectedInquiry.contactNumber}
+                    {selectedInquiry.countryCode}{" "}
+                    {selectedInquiry.contactNumber}
                   </a>
                 </p>
               </div>

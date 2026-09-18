@@ -39,12 +39,13 @@ export function clearAdminSession(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
-  document.cookie = "admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  document.cookie =
+    "admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
 export async function adminFetch<T = any>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<{ success: boolean; data?: T; message?: string; status: number }> {
   const token = getAdminToken();
 
@@ -71,7 +72,10 @@ export async function adminFetch<T = any>(
 
     if (status === 401 || status === 403) {
       // Session expired or unauthorized
-      if (typeof window !== "undefined" && !window.location.pathname.includes("/admin/login")) {
+      if (
+        typeof window !== "undefined" &&
+        !window.location.pathname.includes("/admin/login")
+      ) {
         clearAdminSession();
         window.location.href = "/admin/login?expired=true";
       }
@@ -82,7 +86,8 @@ export async function adminFetch<T = any>(
     if (!response.ok) {
       return {
         success: false,
-        message: json.message || json.error || `Request failed with status ${status}`,
+        message:
+          json.message || json.error || `Request failed with status ${status}`,
         data: json.data,
         status,
       };
@@ -104,7 +109,9 @@ export async function adminFetch<T = any>(
   }
 }
 
-export function formatCurrency(amount: number | string | null | undefined): string {
+export function formatCurrency(
+  amount: number | string | null | undefined,
+): string {
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
   if (num === null || num === undefined || isNaN(num)) return "$0.00";
   return new Intl.NumberFormat("en-CA", {
@@ -113,7 +120,9 @@ export function formatCurrency(amount: number | string | null | undefined): stri
   }).format(num);
 }
 
-export function formatDate(dateString: string | Date | null | undefined): string {
+export function formatDate(
+  dateString: string | Date | null | undefined,
+): string {
   if (!dateString) return "N/A";
   try {
     const d = new Date(dateString);
@@ -128,7 +137,9 @@ export function formatDate(dateString: string | Date | null | undefined): string
   }
 }
 
-export function formatDateTime(dateString: string | Date | null | undefined): string {
+export function formatDateTime(
+  dateString: string | Date | null | undefined,
+): string {
   if (!dateString) return "N/A";
   try {
     const d = new Date(dateString);
@@ -145,12 +156,17 @@ export function formatDateTime(dateString: string | Date | null | undefined): st
   }
 }
 
-export function formatTime(timeString: string | Date | null | undefined): string {
+export function formatTime(
+  timeString: string | Date | null | undefined,
+): string {
   if (!timeString) return "N/A";
   try {
     let h = 0;
     let m = 0;
-    if (typeof timeString === "string" && /^([01]\d|2[0-3]):([0-5]\d)/.test(timeString)) {
+    if (
+      typeof timeString === "string" &&
+      /^([01]\d|2[0-3]):([0-5]\d)/.test(timeString)
+    ) {
       const parts = timeString.split(":");
       h = parseInt(parts[0], 10);
       m = parseInt(parts[1], 10);

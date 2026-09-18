@@ -1,8 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Shield, Lock, Mail, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
+import {
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  Loader2,
+  ArrowRight,
+} from "lucide-react";
 import { setAdminSession } from "@/app/lib/admin-api";
 import Link from "next/link";
 
@@ -40,7 +48,9 @@ export default function AdminLoginPage() {
       const data = await response.json();
 
       if (!response.ok || !data.jwt) {
-        setErrorMessage(data.message || "Invalid credentials. Please try again.");
+        setErrorMessage(
+          data.message || "Invalid credentials. Please try again.",
+        );
         setIsLoading(false);
         return;
       }
@@ -58,7 +68,9 @@ export default function AdminLoginPage() {
       router.push("/admin");
     } catch (error: any) {
       console.error("Login failed:", error);
-      setErrorMessage("An unexpected error occurred. Please check your network and try again.");
+      setErrorMessage(
+        "An unexpected error occurred. Please check your network and try again.",
+      );
       setIsLoading(false);
     }
   };
@@ -72,8 +84,15 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo and Heading */}
         <div className="text-center mb-8">
-          <div className="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-br from-[#D32F2F] to-[#991b1b] items-center justify-center shadow-2xl shadow-red-950/60 mb-4 border border-red-500/30 animate-in zoom-in-90 duration-300">
-            <Shield className="h-8 w-8 text-white" />
+          <div className="inline-flex h-16 w-16 items-center justify-center mb-4">
+            <Image
+              src="/icon.png"
+              alt="The Wolverines Logo"
+              width={64}
+              height={64}
+              className="h-16 w-16 object-contain drop-shadow-[0_4px_16px_rgba(211,47,47,0.4)]"
+              priority
+            />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-white">
             The Wolverines

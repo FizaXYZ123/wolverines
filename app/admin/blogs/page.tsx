@@ -180,9 +180,11 @@ export default function BlogsManagementPage() {
       formData.append("slug", slug.trim());
       formData.append("date", date);
       formData.append("content", content);
-      if (shortDescription.trim()) formData.append("shortDescription", shortDescription.trim());
+      if (shortDescription.trim())
+        formData.append("shortDescription", shortDescription.trim());
       if (metaTitle.trim()) formData.append("metaTitle", metaTitle.trim());
-      if (metaDescription.trim()) formData.append("metaDescription", metaDescription.trim());
+      if (metaDescription.trim())
+        formData.append("metaDescription", metaDescription.trim());
       if (imageFile) formData.append("featuredImage", imageFile);
 
       let res;
@@ -204,7 +206,11 @@ export default function BlogsManagementPage() {
         return;
       }
 
-      showSuccess(editingBlog ? "Blog updated successfully!" : "Blog published successfully!");
+      showSuccess(
+        editingBlog
+          ? "Blog updated successfully!"
+          : "Blog published successfully!",
+      );
       setIsFormOpen(false);
       fetchBlogs();
     } catch (error: any) {
@@ -279,7 +285,9 @@ export default function BlogsManagementPage() {
             className="p-2.5 rounded-xl bg-[#141414] border border-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
             title="Refresh blogs"
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
           </button>
 
           <button
@@ -296,14 +304,20 @@ export default function BlogsManagementPage() {
       {isLoading ? (
         <div className="py-20 flex flex-col items-center justify-center text-neutral-400">
           <Loader2 className="h-8 w-8 animate-spin text-[#D32F2F] mb-3" />
-          <p className="text-xs uppercase tracking-wider font-semibold">Loading blogs...</p>
+          <p className="text-xs uppercase tracking-wider font-semibold">
+            Loading blogs...
+          </p>
         </div>
       ) : filteredBlogs.length === 0 ? (
         <div className="py-20 rounded-3xl bg-[#141414] border border-white/10 text-center text-neutral-500">
           <FileText className="h-12 w-12 mx-auto text-neutral-600 mb-3" />
-          <h3 className="text-base font-bold text-white">No Blog Posts Found</h3>
+          <h3 className="text-base font-bold text-white">
+            No Blog Posts Found
+          </h3>
           <p className="text-xs text-neutral-400 mt-1 max-w-sm mx-auto">
-            {searchQuery ? "No articles match your search." : "You have not published any blogs yet. Click 'Write New Blog' to create one."}
+            {searchQuery
+              ? "No articles match your search."
+              : "You have not published any blogs yet. Click 'Write New Blog' to create one."}
           </p>
         </div>
       ) : (
@@ -339,7 +353,8 @@ export default function BlogsManagementPage() {
                     {blog.title}
                   </h4>
                   <p className="text-xs text-neutral-400 line-clamp-2">
-                    {blog.shortDescription || blog.content?.slice(0, 120) + "..."}
+                    {blog.shortDescription ||
+                      blog.content?.slice(0, 120) + "..."}
                   </p>
                 </div>
 
@@ -382,7 +397,8 @@ export default function BlogsManagementPage() {
                   {editingBlog ? "Edit Blog" : "New Blog"}
                 </h3>
                 <p className="text-xs text-neutral-400 mt-0.5">
-                  Publish club articles, match updates, training guides, and community announcements.
+                  Publish club articles, match updates, training guides, and
+                  community announcements.
                 </p>
               </div>
               <button
@@ -394,7 +410,11 @@ export default function BlogsManagementPage() {
             </div>
 
             {/* Scrollable Form Body */}
-            <form id="blogForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar">
+            <form
+              id="blogForm"
+              onSubmit={handleSubmit}
+              className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 custom-scrollbar"
+            >
               {formError && (
                 <div className="p-4 rounded-xl bg-red-950/50 border border-red-500/30 text-red-300 text-xs font-medium">
                   {formError}
@@ -466,7 +486,11 @@ export default function BlogsManagementPage() {
                 <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-dashed border-white/15">
                   {imagePreview ? (
                     <div className="relative h-28 w-44 rounded-xl overflow-hidden bg-neutral-900 border border-white/10 shrink-0">
-                      <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                   ) : (
                     <div className="h-28 w-44 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center text-neutral-500 shrink-0">
@@ -500,7 +524,7 @@ export default function BlogsManagementPage() {
               {/* Full Blog Content */}
               <div>
                 <label className="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-2">
-                   Content *
+                  Content *
                 </label>
                 <RichTextEditor
                   value={content}

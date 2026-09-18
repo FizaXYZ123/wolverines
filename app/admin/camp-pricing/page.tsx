@@ -23,10 +23,14 @@ export default function CampPricingPage() {
   const [summerPricing, setSummerPricing] = useState<any | null>(null);
   const [winterPricing, setWinterPricing] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [togglingCamp, setTogglingCamp] = useState<"summer" | "winter" | null>(null);
+  const [togglingCamp, setTogglingCamp] = useState<"summer" | "winter" | null>(
+    null,
+  );
 
   // Form modal state
-  const [activeCampType, setActiveCampType] = useState<"summer" | "winter" | null>(null);
+  const [activeCampType, setActiveCampType] = useState<
+    "summer" | "winter" | null
+  >(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -80,12 +84,26 @@ export default function CampPricingPage() {
     setActiveCampType(type);
     if (currentData) {
       setFormData({
-        minAge: currentData.minAge !== undefined ? String(currentData.minAge) : "6",
-        maxAge: currentData.maxAge !== undefined ? String(currentData.maxAge) : "16",
-        youngerAgePrice: currentData.youngerAgePrice !== undefined ? String(currentData.youngerAgePrice) : "250",
-        olderAgePrice: currentData.olderAgePrice !== undefined ? String(currentData.olderAgePrice) : "350",
-        siblingDiscount: currentData.siblingDiscount !== undefined ? String(currentData.siblingDiscount) : "40",
-        processingFeePercent: currentData.processingFeePercent !== undefined ? String(currentData.processingFeePercent) : "3",
+        minAge:
+          currentData.minAge !== undefined ? String(currentData.minAge) : "6",
+        maxAge:
+          currentData.maxAge !== undefined ? String(currentData.maxAge) : "16",
+        youngerAgePrice:
+          currentData.youngerAgePrice !== undefined
+            ? String(currentData.youngerAgePrice)
+            : "250",
+        olderAgePrice:
+          currentData.olderAgePrice !== undefined
+            ? String(currentData.olderAgePrice)
+            : "350",
+        siblingDiscount:
+          currentData.siblingDiscount !== undefined
+            ? String(currentData.siblingDiscount)
+            : "40",
+        processingFeePercent:
+          currentData.processingFeePercent !== undefined
+            ? String(currentData.processingFeePercent)
+            : "3",
         isEnabled: currentData.isEnabled ?? true,
       });
     } else {
@@ -125,7 +143,7 @@ export default function CampPricingPage() {
       showSuccess(
         `${type === "summer" ? "Summer" : "Winter"} camp pricing ${
           !item.isEnabled ? "enabled" : "disabled"
-        }!`
+        }!`,
       );
       await fetchPricing(false);
     } catch (error: any) {
@@ -144,14 +162,21 @@ export default function CampPricingPage() {
     const youngerAgePrice = parseFloat(String(formData.youngerAgePrice));
     const olderAgePrice = parseFloat(String(formData.olderAgePrice));
     const siblingDiscount = parseFloat(String(formData.siblingDiscount));
-    const processingFeePercent = parseFloat(String(formData.processingFeePercent));
+    const processingFeePercent = parseFloat(
+      String(formData.processingFeePercent),
+    );
 
     if (isNaN(minAge) || isNaN(maxAge) || minAge >= maxAge) {
       setFormError("Max Age must be greater than Min Age.");
       return;
     }
 
-    if (isNaN(youngerAgePrice) || youngerAgePrice < 0 || isNaN(olderAgePrice) || olderAgePrice < 0) {
+    if (
+      isNaN(youngerAgePrice) ||
+      youngerAgePrice < 0 ||
+      isNaN(olderAgePrice) ||
+      olderAgePrice < 0
+    ) {
       setFormError("Prices must be valid non-negative numbers.");
       return;
     }
@@ -171,7 +196,9 @@ export default function CampPricingPage() {
     try {
       const isSummer = activeCampType === "summer";
       const existing = isSummer ? summerPricing : winterPricing;
-      const baseRoute = isSummer ? "/api/summer-camp-pricing" : "/api/winter-camp-pricing";
+      const baseRoute = isSummer
+        ? "/api/summer-camp-pricing"
+        : "/api/winter-camp-pricing";
 
       const payload = {
         minAge,
@@ -230,7 +257,8 @@ export default function CampPricingPage() {
             Camp Pricing & Tier Rules
           </h2>
           <p className="text-xs text-neutral-400 mt-1">
-            Configure registration fees, younger vs older age tier cutoffs, sibling discounts, and registration availability.
+            Configure registration fees, younger vs older age tier cutoffs,
+            sibling discounts, and registration availability.
           </p>
         </div>
 
@@ -247,7 +275,9 @@ export default function CampPricingPage() {
       {isLoading ? (
         <div className="py-20 flex flex-col items-center justify-center text-neutral-400">
           <Loader2 className="h-8 w-8 animate-spin text-[#D32F2F] mb-3" />
-          <p className="text-xs uppercase tracking-wider font-semibold">Loading pricing configurations...</p>
+          <p className="text-xs uppercase tracking-wider font-semibold">
+            Loading pricing configurations...
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -275,11 +305,16 @@ export default function CampPricingPage() {
                     onClick={() => handleToggleStatus("summer", summerPricing)}
                     disabled={togglingCamp !== null}
                     className="flex items-center gap-2 transition-transform active:scale-95 cursor-pointer disabled:cursor-not-allowed"
-                    title={summerPricing.isEnabled ? "Click to Disable" : "Click to Enable"}
+                    title={
+                      summerPricing.isEnabled
+                        ? "Click to Disable"
+                        : "Click to Enable"
+                    }
                   >
                     {togglingCamp === "summer" ? (
                       <span className="flex items-center gap-1.5 text-neutral-300 bg-white/10 border border-white/15 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-[#D32F2F]" /> Updating...
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-[#D32F2F]" />{" "}
+                        Updating...
                       </span>
                     ) : summerPricing.isEnabled ? (
                       <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold hover:bg-emerald-900/40 transition-colors">
@@ -287,7 +322,8 @@ export default function CampPricingPage() {
                       </span>
                     ) : (
                       <span className="flex items-center gap-1.5 text-neutral-400 bg-neutral-900 border border-white/10 px-3 py-1 rounded-full text-xs font-bold hover:bg-white/5 transition-colors">
-                        <ToggleLeft className="h-4 w-4 text-neutral-500" /> Disabled
+                        <ToggleLeft className="h-4 w-4 text-neutral-500" />{" "}
+                        Disabled
                       </span>
                     )}
                   </button>
@@ -298,50 +334,66 @@ export default function CampPricingPage() {
               {summerPricing ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-[#0f0f0f] border border-white/5">
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Age Range</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Age Range
+                    </p>
                     <p className="text-base font-extrabold text-white mt-0.5">
                       {summerPricing.minAge} – {summerPricing.maxAge} yrs
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Younger Tier Fee</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Younger Tier Fee
+                    </p>
                     <p className="text-base font-extrabold text-emerald-400 mt-0.5">
                       {formatCurrency(summerPricing.youngerAgePrice)}
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Older Tier Fee</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Older Tier Fee
+                    </p>
                     <p className="text-base font-extrabold text-emerald-400 mt-0.5">
                       {formatCurrency(summerPricing.olderAgePrice)}
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Sibling Discount</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Sibling Discount
+                    </p>
                     <p className="text-base font-extrabold text-amber-400 mt-0.5">
                       {formatCurrency(summerPricing.siblingDiscount)} OFF
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Processing Fee</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Processing Fee
+                    </p>
                     <p className="text-base font-extrabold text-neutral-300 mt-0.5">
                       {summerPricing.processingFeePercent}%
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Status</p>
-                    <p className={`text-xs font-bold mt-1 ${summerPricing.isEnabled ? "text-emerald-400" : "text-neutral-400"}`}>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Status
+                    </p>
+                    <p
+                      className={`text-xs font-bold mt-1 ${summerPricing.isEnabled ? "text-emerald-400" : "text-neutral-400"}`}
+                    >
                       {summerPricing.isEnabled ? "Enabled" : "Disabled"}
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="py-8 text-center text-neutral-500 border border-dashed border-white/10 rounded-2xl p-6">
-                  <p className="text-xs">No Summer Camp pricing tier created yet.</p>
+                  <p className="text-xs">
+                    No Summer Camp pricing tier created yet.
+                  </p>
                 </div>
               )}
             </div>
@@ -352,8 +404,14 @@ export default function CampPricingPage() {
                 onClick={() => handleOpenForm("summer", summerPricing)}
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-orange-950/40 hover:brightness-110 flex items-center gap-2 transition-all cursor-pointer"
               >
-                {summerPricing ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                {summerPricing ? "Edit Summer Pricing" : "Create Summer Pricing"}
+                {summerPricing ? (
+                  <Edit className="h-4 w-4" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+                {summerPricing
+                  ? "Edit Summer Pricing"
+                  : "Create Summer Pricing"}
               </button>
             </div>
           </div>
@@ -382,11 +440,16 @@ export default function CampPricingPage() {
                     onClick={() => handleToggleStatus("winter", winterPricing)}
                     disabled={togglingCamp !== null}
                     className="flex items-center gap-2 transition-transform active:scale-95 cursor-pointer disabled:cursor-not-allowed"
-                    title={winterPricing.isEnabled ? "Click to Disable" : "Click to Enable"}
+                    title={
+                      winterPricing.isEnabled
+                        ? "Click to Disable"
+                        : "Click to Enable"
+                    }
                   >
                     {togglingCamp === "winter" ? (
                       <span className="flex items-center gap-1.5 text-neutral-300 bg-white/10 border border-white/15 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
-                        <Loader2 className="h-3.5 w-3.5 animate-spin text-[#D32F2F]" /> Updating...
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-[#D32F2F]" />{" "}
+                        Updating...
                       </span>
                     ) : winterPricing.isEnabled ? (
                       <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold hover:bg-emerald-900/40 transition-colors">
@@ -394,7 +457,8 @@ export default function CampPricingPage() {
                       </span>
                     ) : (
                       <span className="flex items-center gap-1.5 text-neutral-400 bg-neutral-900 border border-white/10 px-3 py-1 rounded-full text-xs font-bold hover:bg-white/5 transition-colors">
-                        <ToggleLeft className="h-4 w-4 text-neutral-500" /> Disabled
+                        <ToggleLeft className="h-4 w-4 text-neutral-500" />{" "}
+                        Disabled
                       </span>
                     )}
                   </button>
@@ -405,50 +469,66 @@ export default function CampPricingPage() {
               {winterPricing ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-[#0f0f0f] border border-white/5">
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Age Range</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Age Range
+                    </p>
                     <p className="text-base font-extrabold text-white mt-0.5">
                       {winterPricing.minAge} – {winterPricing.maxAge} yrs
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Younger Tier Fee</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Younger Tier Fee
+                    </p>
                     <p className="text-base font-extrabold text-emerald-400 mt-0.5">
                       {formatCurrency(winterPricing.youngerAgePrice)}
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Older Tier Fee</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Older Tier Fee
+                    </p>
                     <p className="text-base font-extrabold text-emerald-400 mt-0.5">
                       {formatCurrency(winterPricing.olderAgePrice)}
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Sibling Discount</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Sibling Discount
+                    </p>
                     <p className="text-base font-extrabold text-amber-400 mt-0.5">
                       {formatCurrency(winterPricing.siblingDiscount)} OFF
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Processing Fee</p>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Processing Fee
+                    </p>
                     <p className="text-base font-extrabold text-neutral-300 mt-0.5">
                       {winterPricing.processingFeePercent}%
                     </p>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white/[0.02]">
-                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">Status</p>
-                    <p className={`text-xs font-bold mt-1 ${winterPricing.isEnabled ? "text-emerald-400" : "text-neutral-400"}`}>
+                    <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                      Status
+                    </p>
+                    <p
+                      className={`text-xs font-bold mt-1 ${winterPricing.isEnabled ? "text-emerald-400" : "text-neutral-400"}`}
+                    >
                       {winterPricing.isEnabled ? "Enabled" : "Disabled"}
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="py-8 text-center text-neutral-500 border border-dashed border-white/10 rounded-2xl p-6">
-                  <p className="text-xs">No Winter Camp pricing tier created yet.</p>
+                  <p className="text-xs">
+                    No Winter Camp pricing tier created yet.
+                  </p>
                 </div>
               )}
             </div>
@@ -459,8 +539,14 @@ export default function CampPricingPage() {
                 onClick={() => handleOpenForm("winter", winterPricing)}
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-blue-950/40 hover:brightness-110 flex items-center gap-2 transition-all cursor-pointer"
               >
-                {winterPricing ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                {winterPricing ? "Edit Winter Pricing" : "Create Winter Pricing"}
+                {winterPricing ? (
+                  <Edit className="h-4 w-4" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+                {winterPricing
+                  ? "Edit Winter Pricing"
+                  : "Create Winter Pricing"}
               </button>
             </div>
           </div>
@@ -479,10 +565,12 @@ export default function CampPricingPage() {
             </button>
 
             <h3 className="text-xl font-bold text-white tracking-tight">
-              {activeCampType === "summer" ? "Summer" : "Winter"} Camp Pricing Configuration
+              {activeCampType === "summer" ? "Summer" : "Winter"} Camp Pricing
+              Configuration
             </h3>
             <p className="text-xs text-neutral-400 mt-1">
-              Adjust registration fees, age boundaries, sibling discounts, and status.
+              Adjust registration fees, age boundaries, sibling discounts, and
+              status.
             </p>
 
             {formError && (
@@ -502,7 +590,9 @@ export default function CampPricingPage() {
                     min="1"
                     max="30"
                     value={formData.minAge}
-                    onChange={(e) => setFormData({ ...formData, minAge: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, minAge: e.target.value })
+                    }
                     required
                     className="w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-[#D32F2F] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -517,7 +607,9 @@ export default function CampPricingPage() {
                     min="1"
                     max="50"
                     value={formData.maxAge}
-                    onChange={(e) => setFormData({ ...formData, maxAge: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, maxAge: e.target.value })
+                    }
                     required
                     className="w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-[#D32F2F] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -534,7 +626,12 @@ export default function CampPricingPage() {
                     step="0.01"
                     min="0"
                     value={formData.youngerAgePrice}
-                    onChange={(e) => setFormData({ ...formData, youngerAgePrice: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        youngerAgePrice: e.target.value,
+                      })
+                    }
                     required
                     className="w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-[#D32F2F] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -549,7 +646,12 @@ export default function CampPricingPage() {
                     step="0.01"
                     min="0"
                     value={formData.olderAgePrice}
-                    onChange={(e) => setFormData({ ...formData, olderAgePrice: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        olderAgePrice: e.target.value,
+                      })
+                    }
                     required
                     className="w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-[#D32F2F] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -566,7 +668,12 @@ export default function CampPricingPage() {
                     step="0.01"
                     min="0"
                     value={formData.siblingDiscount}
-                    onChange={(e) => setFormData({ ...formData, siblingDiscount: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        siblingDiscount: e.target.value,
+                      })
+                    }
                     required
                     className="w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-[#D32F2F] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -582,7 +689,12 @@ export default function CampPricingPage() {
                     min="0"
                     max="50"
                     value={formData.processingFeePercent}
-                    onChange={(e) => setFormData({ ...formData, processingFeePercent: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        processingFeePercent: e.target.value,
+                      })
+                    }
                     required
                     className="w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-[#D32F2F] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
@@ -591,13 +703,19 @@ export default function CampPricingPage() {
 
               <div className="pt-2">
                 <div
-                  onClick={() => setFormData({ ...formData, isEnabled: !formData.isEnabled })}
+                  onClick={() =>
+                    setFormData({ ...formData, isEnabled: !formData.isEnabled })
+                  }
                   className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 cursor-pointer hover:bg-white/[0.04] transition-colors select-none"
                 >
                   <div>
-                    <span className="text-xs font-bold text-white block">Status</span>
+                    <span className="text-xs font-bold text-white block">
+                      Status
+                    </span>
                     <span className="text-[11px] text-neutral-400 block">
-                      {formData.isEnabled ? "Enabled (Accepting registrations)" : "Disabled (Registrations paused)"}
+                      {formData.isEnabled
+                        ? "Enabled (Accepting registrations)"
+                        : "Disabled (Registrations paused)"}
                     </span>
                   </div>
                   <div

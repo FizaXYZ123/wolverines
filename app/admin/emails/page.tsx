@@ -17,6 +17,8 @@ import {
   Code,
   Sparkles,
   Search,
+  Copy,
+  Check,
 } from "lucide-react";
 import { adminFetch, formatDate, formatDateTime } from "@/app/lib/admin-api";
 import DetailModal from "@/components/admin/DetailModal";
@@ -28,6 +30,7 @@ export default function EmailMarketingPage() {
   const [contactsCount, setContactsCount] = useState<number>(0);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
+  const [copiedRecipients, setCopiedRecipients] = useState(false);
 
   // Compose State
   const [mode, setMode] = useState<RecipientMode>("database");
@@ -41,6 +44,13 @@ export default function EmailMarketingPage() {
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [sendSuccess, setSendSuccess] = useState<string | null>(null);
+
+  const showSuccessToast = (msg: string) => {
+    setSendSuccess(msg);
+    setTimeout(() => {
+      setSendSuccess(null);
+    }, 4000);
+  };
 
   const fetchEmailData = async () => {
     setIsLoadingHistory(true);
@@ -93,7 +103,9 @@ export default function EmailMarketingPage() {
     }
 
     if (mode === "csv" && !csvFile) {
-      setSendError("Please select a valid CSV file containing email addresses.");
+      setSendError(
+        "Please select a valid CSV file containing email addresses.",
+      );
       return;
     }
 
@@ -123,10 +135,12 @@ export default function EmailMarketingPage() {
         return;
       }
 
-      setSendSuccess(
+      showSuccessToast(
         `Campaign dispatched successfully! ${
-          res.data?.sentCount !== undefined ? `Sent to ${res.data.sentCount} recipient(s).` : ""
-        }`
+          res.data?.sentCount !== undefined
+            ? `Sent to ${res.data.sentCount} recipient(s).`
+            : ""
+        }`,
       );
 
       // Reset form
@@ -138,7 +152,9 @@ export default function EmailMarketingPage() {
 
       fetchEmailData();
     } catch (error: any) {
-      setSendError(error.message || "An unexpected error occurred while sending.");
+      setSendError(
+        error.message || "An unexpected error occurred while sending.",
+      );
     } finally {
       setIsSending(false);
     }
@@ -146,6 +162,14 @@ export default function EmailMarketingPage() {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-300">
+      {/* Toast Notification */}
+      {sendSuccess && (
+        <div className="fixed top-6 right-6 z-50 p-4 rounded-2xl bg-emerald-950 border border-emerald-500/40 text-emerald-300 text-xs font-semibold shadow-2xl flex items-center gap-2 animate-in slide-in-from-top-4">
+          <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+          {sendSuccess}
+        </div>
+      )}
+
       {/* ================= SECTION 1: COMPOSE & SEND ================= */}
       <div className="rounded-3xl bg-[#141414] border border-white/10 p-6 sm:p-8 shadow-2xl">
         <div className="flex items-center gap-3 mb-6">
@@ -154,20 +178,14 @@ export default function EmailMarketingPage() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white tracking-tight">
-              Broadcast Email Campaign
+              Broadcast Email
             </h2>
             <p className="text-xs text-neutral-400">
-              Send notifications, camp newsletters, match schedules, and donor thank yous via Brevo.
+              Send notifications, camp newsletters, match schedules, and donor
+              thank yous via Brevo.
             </p>
           </div>
         </div>
-
-        {sendSuccess && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-            {sendSuccess}
-          </div>
-        )}
 
         {sendError && (
           <div className="mb-6 p-4 rounded-2xl bg-red-950/80 border border-red-500/40 text-red-300 text-xs font-semibold flex items-center gap-2">
@@ -194,12 +212,16 @@ export default function EmailMarketingPage() {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <Users className={`h-5 w-5 ${mode === "database" ? "text-[#D32F2F]" : "text-neutral-500"}`} />
+                  <Users
+                    className={`h-5 w-5 ${mode === "database" ? "text-[#D32F2F]" : "text-neutral-500"}`}
+                  />
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 font-mono text-neutral-300">
                     {contactsCount} saved
                   </span>
                 </div>
-                <h4 className="font-bold text-sm text-white mt-3">All Club Contacts</h4>
+                <h4 className="font-bold text-sm text-white mt-3">
+                  All Club Contacts
+                </h4>
                 <p className="text-[11px] text-neutral-400 mt-0.5">
                   Broadcast to all saved emails in database
                 </p>
@@ -215,8 +237,12 @@ export default function EmailMarketingPage() {
                     : "bg-[#0f0f0f] border-white/5 text-neutral-400 hover:border-white/15"
                 }`}
               >
-                <FileSpreadsheet className={`h-5 w-5 ${mode === "csv" ? "text-[#D32F2F]" : "text-neutral-500"}`} />
-                <h4 className="font-bold text-sm text-white mt-3">Upload CSV File</h4>
+                <FileSpreadsheet
+                  className={`h-5 w-5 ${mode === "csv" ? "text-[#D32F2F]" : "text-neutral-500"}`}
+                />
+                <h4 className="font-bold text-sm text-white mt-3">
+                  Upload CSV File
+                </h4>
                 <p className="text-[11px] text-neutral-400 mt-0.5">
                   Import a CSV containing email addresses
                 </p>
@@ -232,8 +258,12 @@ export default function EmailMarketingPage() {
                     : "bg-[#0f0f0f] border-white/5 text-neutral-400 hover:border-white/15"
                 }`}
               >
-                <AtSign className={`h-5 w-5 ${mode === "direct" ? "text-[#D32F2F]" : "text-neutral-500"}`} />
-                <h4 className="font-bold text-sm text-white mt-3">Single Recipient</h4>
+                <AtSign
+                  className={`h-5 w-5 ${mode === "direct" ? "text-[#D32F2F]" : "text-neutral-500"}`}
+                />
+                <h4 className="font-bold text-sm text-white mt-3">
+                  Single Recipient
+                </h4>
                 <p className="text-[11px] text-neutral-400 mt-0.5">
                   Send a test or direct targeted email
                 </p>
@@ -278,7 +308,8 @@ export default function EmailMarketingPage() {
                   Choose CSV File
                 </label>
                 <span className="text-xs text-neutral-400">
-                  {csvFileName || "No file selected (must contain an email column)"}
+                  {csvFileName ||
+                    "No file selected (must contain an email column)"}
                 </span>
               </div>
             </div>
@@ -348,7 +379,8 @@ export default function EmailMarketingPage() {
                   <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
                 ) : (
                   <p className="text-neutral-400 text-xs italic">
-                    Type HTML content in the editor to see the live rendering here.
+                    Type HTML content in the editor to see the live rendering
+                    here.
                   </p>
                 )}
               </div>
@@ -358,7 +390,10 @@ export default function EmailMarketingPage() {
           {/* Dispatch Button */}
           <div className="pt-4 border-t border-white/10 flex items-center justify-between">
             <span className="text-xs text-neutral-500">
-              Emails are sent with sender identity: <span className="text-neutral-300 font-semibold">The Wolverines</span>
+              Emails are sent with sender identity:{" "}
+              <span className="text-neutral-300 font-semibold">
+                The Wolverines
+              </span>
             </span>
 
             <button
@@ -398,7 +433,9 @@ export default function EmailMarketingPage() {
             className="p-2.5 rounded-xl bg-[#141414] border border-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
             title="Refresh history"
           >
-            <RefreshCw className={`h-4 w-4 ${isLoadingHistory ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isLoadingHistory ? "animate-spin" : ""}`}
+            />
           </button>
         </div>
 
@@ -407,7 +444,9 @@ export default function EmailMarketingPage() {
             {isLoadingHistory ? (
               <div className="py-16 flex flex-col items-center justify-center text-neutral-400">
                 <Loader2 className="h-8 w-8 animate-spin text-[#D32F2F] mb-3" />
-                <p className="text-xs uppercase tracking-wider font-semibold">Loading campaign logs...</p>
+                <p className="text-xs uppercase tracking-wider font-semibold">
+                  Loading campaign logs...
+                </p>
               </div>
             ) : history.length === 0 ? (
               <div className="py-16 text-center text-neutral-500 text-sm">
@@ -421,13 +460,16 @@ export default function EmailMarketingPage() {
                     <th className="py-4 px-6">Source</th>
                     <th className="py-4 px-6 text-center">Recipients</th>
                     <th className="py-4 px-6 text-center">Sent / Failed</th>
-                    <th className="py-4 px-6">Status / Date</th>
+                    <th className="py-4 px-6">Date</th>
                     <th className="py-4 px-6 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {history.map((item) => (
-                    <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
+                    <tr
+                      key={item.id}
+                      className="hover:bg-white/[0.02] transition-colors"
+                    >
                       <td className="py-4 px-6">
                         <div className="font-bold text-white text-sm max-w-xs truncate">
                           {item.subject}
@@ -442,34 +484,27 @@ export default function EmailMarketingPage() {
                         {item.totalRecipients}
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <span className="text-emerald-400 font-bold">{item.sentCount}</span>
+                        <span className="text-emerald-400 font-bold">
+                          {item.sentCount}
+                        </span>
                         {item.failedCount > 0 && (
-                          <span className="text-red-400 font-bold ml-1">/ {item.failedCount} failed</span>
+                          <span className="text-red-400 font-bold ml-1">
+                            / {item.failedCount} failed
+                          </span>
                         )}
                       </td>
                       <td className="py-4 px-6">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            item.status === "SENT"
-                              ? "bg-emerald-950/60 text-emerald-400 border border-emerald-500/30"
-                              : item.status === "PARTIAL"
-                              ? "bg-amber-950/60 text-amber-400 border border-amber-500/30"
-                              : "bg-red-950/60 text-red-400 border border-red-500/30"
-                          }`}
-                        >
-                          {item.status}
-                        </span>
-                        <p className="text-[11px] text-neutral-500 mt-1">
+                        <div className="text-xs text-neutral-300 font-medium">
                           {formatDate(item.sentAt || item.createdAt)}
-                        </p>
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-right">
                         <button
                           onClick={() => setSelectedEmail(item)}
-                          className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 hover:text-white border border-white/10 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                          className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-200 hover:text-white border border-white/10 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title="View Log"
                         >
                           <Eye className="h-3.5 w-3.5" />
-                          View Log
                         </button>
                       </td>
                     </tr>
@@ -482,67 +517,171 @@ export default function EmailMarketingPage() {
       </div>
 
       {/* Campaign Details Modal */}
-      {selectedEmail && (
-        <DetailModal
-          isOpen={!!selectedEmail}
-          title="Campaign Delivery Details"
-          subtitle={selectedEmail.subject}
-          badge={
-            <span
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                selectedEmail.status === "SENT"
-                  ? "bg-emerald-950 text-emerald-400 border border-emerald-500/30"
-                  : "bg-amber-950 text-amber-400 border border-amber-500/30"
-              }`}
-            >
-              {selectedEmail.status}
-            </span>
-          }
-          onClose={() => setSelectedEmail(null)}
-          maxWidth="max-w-2xl"
-        >
-          <div className="space-y-6">
-            {/* Delivery Stats Bar */}
-            <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-[#0f0f0f] border border-white/5 text-center">
-              <div>
-                <p className="text-[10px] text-neutral-500 uppercase font-semibold">Total Target</p>
-                <p className="text-lg font-bold text-white mt-0.5">{selectedEmail.totalRecipients}</p>
+      {selectedEmail && (() => {
+        const recipientsList: string[] = Array.isArray(selectedEmail.recipients)
+          ? selectedEmail.recipients
+          : typeof selectedEmail.recipients === "string"
+            ? JSON.parse(selectedEmail.recipients || "[]")
+            : [];
+
+        const failedList: string[] = Array.isArray(selectedEmail.failedRecipients)
+          ? selectedEmail.failedRecipients
+          : typeof selectedEmail.failedRecipients === "string"
+            ? JSON.parse(selectedEmail.failedRecipients || "[]")
+            : [];
+
+        return (
+          <DetailModal
+            isOpen={!!selectedEmail}
+            title="Campaign Delivery Details"
+            subtitle={selectedEmail.subject}
+            badge={
+              <span
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                  selectedEmail.status === "SENT"
+                    ? "bg-emerald-950 text-emerald-400 border border-emerald-500/30"
+                    : "bg-amber-950 text-amber-400 border border-amber-500/30"
+                }`}
+              >
+                {selectedEmail.status}
+              </span>
+            }
+            onClose={() => {
+              setSelectedEmail(null);
+              setCopiedRecipients(false);
+            }}
+            maxWidth="max-w-2xl"
+          >
+            <div className="space-y-6">
+              {/* Delivery Stats Bar */}
+              <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-[#0f0f0f] border border-white/5 text-center">
+                <div>
+                  <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                    Total Target
+                  </p>
+                  <p className="text-lg font-bold text-white mt-0.5">
+                    {selectedEmail.totalRecipients}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                    Delivered
+                  </p>
+                  <p className="text-lg font-bold text-emerald-400 mt-0.5">
+                    {selectedEmail.sentCount}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                    Failed
+                  </p>
+                  <p className="text-lg font-bold text-red-400 mt-0.5">
+                    {selectedEmail.failedCount}
+                  </p>
+                </div>
               </div>
+
+              {/* Targeted Recipients List */}
               <div>
-                <p className="text-[10px] text-neutral-500 uppercase font-semibold">Delivered</p>
-                <p className="text-lg font-bold text-emerald-400 mt-0.5">{selectedEmail.sentCount}</p>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5 text-neutral-500" />
+                    Targeted Recipients ({recipientsList.length})
+                  </h4>
+                  {recipientsList.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(recipientsList.join(", "));
+                        setCopiedRecipients(true);
+                        setTimeout(() => setCopiedRecipients(false), 2000);
+                      }}
+                      className="text-[11px] font-semibold text-neutral-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10"
+                      title="Copy all email addresses"
+                    >
+                      {copiedRecipients ? (
+                        <>
+                          <Check className="h-3 w-3 text-emerald-400" />
+                          <span className="text-emerald-400">Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3" />
+                          <span>Copy All</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                {recipientsList.length === 0 ? (
+                  <div className="p-4 rounded-2xl bg-[#0f0f0f] border border-white/5 text-xs text-neutral-500 text-center">
+                    No recipient logs recorded.
+                  </div>
+                ) : (
+                  <div className="p-3.5 rounded-2xl bg-[#0f0f0f] border border-white/5 max-h-36 overflow-y-auto custom-scrollbar flex flex-wrap gap-1.5">
+                    {recipientsList.map((email: string, idx: number) => {
+                      const isFailed = failedList.includes(email);
+                      return (
+                        <span
+                          key={idx}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-mono transition-colors ${
+                            isFailed
+                              ? "bg-red-950/60 text-red-300 border border-red-500/30"
+                              : "bg-white/5 text-neutral-300 border border-white/10 hover:border-white/20"
+                          }`}
+                        >
+                          <Mail className="h-3 w-3 opacity-60 shrink-0" />
+                          <span>{email}</span>
+                          {isFailed && (
+                            <span className="text-[10px] font-bold uppercase text-red-400 ml-1">
+                              (Failed)
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
+
+              {/* Rendered HTML Preview */}
               <div>
-                <p className="text-[10px] text-neutral-500 uppercase font-semibold">Failed</p>
-                <p className="text-lg font-bold text-red-400 mt-0.5">{selectedEmail.failedCount}</p>
+                <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
+                  Rendered HTML Message
+                </h4>
+                <div className="p-6 rounded-2xl bg-white text-neutral-900 border border-white/10 max-h-72 overflow-y-auto custom-scrollbar">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: selectedEmail.htmlContent,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Error Message if present */}
+              {selectedEmail.errorMessage && (
+                <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/30 text-xs text-red-300">
+                  <p className="font-bold uppercase tracking-wider text-[10px] mb-1">
+                    Failure Log
+                  </p>
+                  <p>{selectedEmail.errorMessage}</p>
+                </div>
+              )}
+
+              <div className="text-[11px] text-neutral-500 flex items-center justify-between">
+                <span>Source: {selectedEmail.source}</span>
+                <span>
+                  Dispatched:{" "}
+                  {formatDateTime(
+                    selectedEmail.sentAt || selectedEmail.createdAt,
+                  )}
+                </span>
               </div>
             </div>
-
-            {/* Rendered HTML Preview */}
-            <div>
-              <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
-                Rendered HTML Message
-              </h4>
-              <div className="p-6 rounded-2xl bg-white text-neutral-900 border border-white/10 max-h-72 overflow-y-auto custom-scrollbar">
-                <div dangerouslySetInnerHTML={{ __html: selectedEmail.htmlContent }} />
-              </div>
-            </div>
-
-            {/* Error Message if present */}
-            {selectedEmail.errorMessage && (
-              <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/30 text-xs text-red-300">
-                <p className="font-bold uppercase tracking-wider text-[10px] mb-1">Failure Log</p>
-                <p>{selectedEmail.errorMessage}</p>
-              </div>
-            )}
-
-            <div className="text-[11px] text-neutral-500 flex items-center justify-between">
-              <span>Source: {selectedEmail.source}</span>
-              <span>Dispatched: {formatDateTime(selectedEmail.sentAt || selectedEmail.createdAt)}</span>
-            </div>
-          </div>
-        </DetailModal>
-      )}
+          </DetailModal>
+        );
+      })()}
     </div>
   );
 }
