@@ -107,6 +107,66 @@ export const COUNTRIES: CountryItem[] = [
   { name: "Vietnam", code: "VN", dial: "+84" },
 ];
 
+/**
+ * Standard national phone number length & placeholder per country
+ */
+export const COUNTRY_PHONE_RULES: Record<
+  string,
+  { maxLength: number; placeholder: string }
+> = {
+  CA: { maxLength: 10, placeholder: "4165551234" },
+  US: { maxLength: 10, placeholder: "2025550143" },
+  IN: { maxLength: 10, placeholder: "9876543210" },
+  GB: { maxLength: 10, placeholder: "7911123456" },
+  AU: { maxLength: 9, placeholder: "412345678" },
+  NZ: { maxLength: 9, placeholder: "211234567" },
+  PK: { maxLength: 10, placeholder: "3001234567" },
+  BD: { maxLength: 10, placeholder: "1712345678" },
+  AE: { maxLength: 9, placeholder: "501234567" },
+  SA: { maxLength: 9, placeholder: "501234567" },
+  QA: { maxLength: 8, placeholder: "33123456" },
+  KW: { maxLength: 8, placeholder: "99123456" },
+  BH: { maxLength: 8, placeholder: "39123456" },
+  OM: { maxLength: 8, placeholder: "91234567" },
+  SG: { maxLength: 8, placeholder: "81234567" },
+  HK: { maxLength: 8, placeholder: "91234567" },
+  MY: { maxLength: 10, placeholder: "123456789" },
+  PH: { maxLength: 10, placeholder: "9171234567" },
+  NP: { maxLength: 10, placeholder: "9841234567" },
+  LK: { maxLength: 9, placeholder: "712345678" },
+  CN: { maxLength: 11, placeholder: "13800138000" },
+  JP: { maxLength: 10, placeholder: "9012345678" },
+  KR: { maxLength: 10, placeholder: "1012345678" },
+  DE: { maxLength: 11, placeholder: "15112345678" },
+  FR: { maxLength: 9, placeholder: "612345678" },
+  IT: { maxLength: 10, placeholder: "3123456789" },
+  ES: { maxLength: 9, placeholder: "612345678" },
+  NL: { maxLength: 9, placeholder: "612345678" },
+  SE: { maxLength: 9, placeholder: "701234567" },
+  NO: { maxLength: 8, placeholder: "41234567" },
+  DK: { maxLength: 8, placeholder: "20123456" },
+  FI: { maxLength: 10, placeholder: "401234567" },
+  CH: { maxLength: 9, placeholder: "781234567" },
+  BE: { maxLength: 9, placeholder: "470123456" },
+  AT: { maxLength: 10, placeholder: "6641234567" },
+  IE: { maxLength: 9, placeholder: "831234567" },
+  PL: { maxLength: 9, placeholder: "512345678" },
+  PT: { maxLength: 9, placeholder: "912345678" },
+  TR: { maxLength: 10, placeholder: "5321234567" },
+  ZA: { maxLength: 9, placeholder: "711234567" },
+  BR: { maxLength: 11, placeholder: "11912345678" },
+  MX: { maxLength: 10, placeholder: "5512345678" },
+};
+
+export const getCountryPhoneRule = (countryCode: string) => {
+  return (
+    COUNTRY_PHONE_RULES[countryCode] || {
+      maxLength: 10,
+      placeholder: "1234567890",
+    }
+  );
+};
+
 interface PhoneCountryInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -123,7 +183,7 @@ export default function PhoneCountryInput({
   selectedCountry: controlledCountry,
   onCountryChange,
   defaultCountryCode = "CA",
-  placeholder = "506-234-5678",
+  placeholder,
   required = false,
 }: PhoneCountryInputProps) {
   const [internalCountry, setInternalCountry] = useState<CountryItem>(() => {
@@ -133,6 +193,8 @@ export default function PhoneCountryInput({
   });
 
   const activeCountry = controlledCountry || internalCountry;
+  const currentRule = getCountryPhoneRule(activeCountry.code);
+  const activePlaceholder = placeholder || currentRule.placeholder;
 
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -181,6 +243,64 @@ export default function PhoneCountryInput({
     setIsOpen(false);
     setSearchQuery("");
     phoneInputRef.current?.focus();
+
+    // If existing value is longer than new country's max length, truncate it
+    const newRule = getCountryPhoneRule(country.code);
+    if (value && value.length > newRule.maxLength) {
+      onChange(value.slice(0, newRule.maxLength));
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Digits only - completely strip letters and non-numeric symbols
+    const digitsOnly = e.target.value.replace(/\D/g, "");
+    const truncated = digitsOnly.slice(0, currentRule.maxLength);
+    onChange(truncated);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow navigation and shortcut keys
+    if (
+      [
+        "Backspace",
+        "Delete",
+        "Tab",
+        "Escape",
+        "Enter",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+        "Home",
+        "End",
+      ].includes(e.key) ||
+      e.ctrlKey ||
+      e.metaKey
+    ) {
+      return;
+    }
+
+    // Block any non-digit key from being typed (letters, special chars, space, etc.)
+    if (!/^\d$/.test(e.key)) {
+      e.preventDefault();
+      return;
+    }
+
+    // Block typing if already reached country max length (unless text is selected for replacement)
+    const input = e.currentTarget;
+    const hasSelection =
+      (input.selectionEnd ?? 0) - (input.selectionStart ?? 0) > 0;
+    if (!hasSelection && value.length >= currentRule.maxLength) {
+      e.preventDefault();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData("text");
+    const digitsOnly = pastedText.replace(/\D/g, "");
+    const truncated = digitsOnly.slice(0, currentRule.maxLength);
+    onChange(truncated);
   };
 
   const getFlagUrl = (code: string) => {
@@ -213,15 +333,20 @@ export default function PhoneCountryInput({
           </span>
         </button>
 
-        {/* Number input */}
+        {/* Number input with numeric only restriction & country max length */}
         <input
           ref={phoneInputRef}
           type="tel"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={currentRule.maxLength}
           required={required}
-          placeholder={placeholder}
+          placeholder={activePlaceholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full px-3.5 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 bg-transparent focus:outline-none"
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          className="w-full px-3.5 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 bg-transparent focus:outline-none font-mono tracking-wide"
         />
       </div>
 
@@ -233,7 +358,7 @@ export default function PhoneCountryInput({
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search"
+              placeholder="Search country..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-3 py-1.5 text-sm text-neutral-900 placeholder:text-neutral-400 bg-white border border-neutral-300 rounded focus:outline-none focus:border-neutral-600"

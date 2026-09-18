@@ -74,7 +74,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-xs sm:text-sm mb-6 text-neutral-500 font-medium overflow-hidden text-ellipsis whitespace-nowrap animate-blog-detail-header">
           <Link
@@ -221,13 +221,13 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                   href={`/blogs/${rec.slug}`}
                   className="bg-white rounded-2xl border border-neutral-200/90 overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col group"
                 >
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100">
+                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100">
                     <Image
                       src={rec.image}
                       alt={rec.title}
                       fill
                       loading="eager"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       sizes="(max-width: 640px) 100vw, 50vw"
                     />
                   </div>

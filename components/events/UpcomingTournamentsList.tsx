@@ -245,7 +245,7 @@ export default function UpcomingTournamentsList() {
 
   return (
     <section className="w-full py-14 sm:py-20 lg:py-18 select-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         {/* Section Header */}
         <div className="flex flex-col items-center text-center mb-12 sm:mb-16">
           <div className="flex items-center gap-2.5 sm:gap-3 mb-2">

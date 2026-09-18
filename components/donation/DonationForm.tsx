@@ -81,7 +81,7 @@ export default function DonationForm() {
           `,
         }}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         {/* Section Header with Official Brand Red Gradient Bar */}
         <div className="flex items-center gap-3 mb-8 sm:mb-10">
           <div

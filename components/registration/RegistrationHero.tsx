@@ -53,8 +53,8 @@ export default function RegistrationHero() {
         }}
       />
 
-      {/* Constrained Hero Banner container (max-w-[1480px]) */}
-      <div className="relative w-full max-w-[1480px] h-[220px] sm:h-[280px] md:h-[350px] lg:h-[400px] bg-white overflow-hidden">
+      {/* Full-Bleed 100% Width Hero Banner */}
+      <div className="relative w-full h-[220px] sm:h-[280px] md:h-[350px] lg:h-[400px] bg-white overflow-hidden">
         {/* LAYER 1: Top Slanted Section (Turf Image + White Outline Text) */}
         {/* Clipped above the slant line: (0, 72%) -> (100%, 46%) */}
         <div
@@ -70,14 +70,14 @@ export default function RegistrationHero() {
               fill
               priority
               className="object-cover object-[center_35%]"
-              sizes="(max-width: 1480px) 100vw, 1480px"
+              sizes="100vw"
             />
             {/* Subtle gradient overlay to ensure white outline text pop-out */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
           </div>
 
           {/* Upper Text: Transparent fill with crisp white stroke outline */}
-          <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-8 sm:pb-6 md:pb-8 lg:pb-10 pointer-events-none animate-reg-text">
+          <div className="absolute inset-0 site-container flex items-end pb-8 sm:pb-6 md:pb-8 lg:pb-10 pointer-events-none animate-reg-text">
             <span
               className="text-[58px] sm:text-[82px] md:text-[116px] lg:text-[145px] font-normal uppercase tracking-wider leading-none select-none text-transparent block"
               style={{
@@ -99,7 +99,7 @@ export default function RegistrationHero() {
           }}
         >
           {/* Lower Text: Solid black fill at the exact identical pixel coordinates */}
-          <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-8 sm:pb-6 md:pb-8 lg:pb-10 pointer-events-none animate-reg-text">
+          <div className="absolute inset-0 site-container flex items-end pb-8 sm:pb-6 md:pb-8 lg:pb-10 pointer-events-none animate-reg-text">
             <span
               aria-hidden="true"
               className="text-[58px] sm:text-[82px] md:text-[116px] lg:text-[145px] font-normal uppercase tracking-wider leading-none select-none text-[#111111] block"
@@ -112,7 +112,7 @@ export default function RegistrationHero() {
           </div>
 
           {/* Right-Side Intro Paragraph positioned under the slant cut */}
-          <div className="hidden sm:flex absolute inset-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 items-end justify-end pb-4 sm:pb-6 md:pb-8 pointer-events-auto animate-reg-desc">
+          <div className="hidden sm:flex absolute inset-0 site-container items-end justify-end pb-4 sm:pb-6 md:pb-8 pointer-events-auto animate-reg-desc">
             <p
               className="text-neutral-700 text-xs sm:text-sm md:text-base lg:text-[16px] leading-relaxed font-normal max-w-sm md:max-w-md text-left"
               style={{
@@ -126,7 +126,7 @@ export default function RegistrationHero() {
       </div>
 
       {/* Mobile Description (visible on mobile below banner) */}
-      <div className="sm:hidden w-full max-w-7xl mx-auto px-4 pt-4 animate-reg-desc">
+      <div className="sm:hidden site-container pt-4 animate-reg-desc">
         <p
           className="text-neutral-700 text-sm leading-relaxed font-normal"
           style={{

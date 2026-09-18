@@ -126,7 +126,7 @@ export default function IndoorPracticeSchedule() {
 
   return (
     <section className="w-full bg-white py-12 sm:py-16 lg:py-20 select-none relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         {/* Section Heading & Event Calendar Button - Cleanly aligned together */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-8 sm:mb-12 gap-4 pb-4 border-b border-neutral-100">
           <div className="flex items-center gap-3">

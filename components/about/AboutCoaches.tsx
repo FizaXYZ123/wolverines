@@ -54,11 +54,11 @@ export default function AboutCoaches() {
   }, []);
 
   return (
-    <div className="w-full bg-white flex justify-center py-14 sm:py-18 lg:py-24 overflow-hidden select-none">
-      <section
-        ref={sectionRef}
-        className="w-full max-w-[1480px] px-4 sm:px-6 lg:px-12 xl:px-16"
-      >
+    <section
+      ref={sectionRef}
+      className="w-full bg-white py-14 sm:py-18 lg:py-20 overflow-hidden select-none"
+    >
+      <div className="site-container">
         {/* Section Header */}
         <div
           className={`flex flex-col items-center text-center mb-12 sm:mb-16 lg:mb-20 transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
@@ -155,7 +155,7 @@ export default function AboutCoaches() {
             );
           })}
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

@@ -25,12 +25,11 @@ export default function HockeyInsightsSection() {
   }, []);
 
   return (
-    <div className="w-full bg-white flex justify-center">
-      <section
-        ref={sectionRef}
-        className="relative w-full max-w-[1480px] bg-white text-neutral-900 py-8 sm:py-10 lg:py-12 select-none overflow-hidden"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <section
+      ref={sectionRef}
+      className="relative w-full bg-white text-neutral-900 py-16 lg:py-20 select-none overflow-hidden"
+    >
+      <div className="site-container relative">
           <div className="flex flex-col items-center text-center">
             {/* Section Tag with Red Accent Bar */}
             <div
@@ -70,6 +69,5 @@ export default function HockeyInsightsSection() {
           </div>
         </div>
       </section>
-    </div>
   );
 }

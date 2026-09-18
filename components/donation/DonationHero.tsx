@@ -53,8 +53,8 @@ export default function DonationHero() {
         }}
       />
 
-      {/* Constrained Hero Banner container (Sleek height, max-w-[1480px]) */}
-      <div className="relative w-full max-w-[1480px] h-[180px] sm:h-[240px] md:h-[300px] lg:h-[360px] bg-white overflow-hidden">
+      {/* Full-Bleed 100% Width Hero Banner */}
+      <div className="relative w-full h-[180px] sm:h-[240px] md:h-[300px] lg:h-[360px] bg-white overflow-hidden">
         {/* LAYER 1: Top Slanted Section (Charity Image + White Outline Text) */}
         {/* Clipped above the slant line: (0, 75%) -> (100%, 48%) */}
         <div
@@ -70,14 +70,14 @@ export default function DonationHero() {
               fill
               priority
               className="object-cover object-[center_45%]"
-              sizes="(max-width: 1480px) 100vw, 1480px"
+              sizes="100vw"
             />
             {/* Subtle gradient overlay to ensure the white outline text has superb contrast */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/30" />
           </div>
 
           {/* Upper Text: Transparent fill with crisp white stroke outline */}
-          <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-3 sm:pb-6 md:pb-8 lg:pb-10 pointer-events-none animate-donation-text">
+          <div className="absolute inset-0 site-container flex items-end pb-3 sm:pb-6 md:pb-8 lg:pb-10 pointer-events-none animate-donation-text">
             <span
               className="text-[44px] sm:text-[68px] md:text-[96px] lg:text-[124px] font-normal uppercase tracking-wider leading-none select-none text-transparent block"
               style={{
@@ -99,7 +99,7 @@ export default function DonationHero() {
           }}
         >
           {/* Lower Text: Solid black fill at the exact identical pixel coordinates */}
-          <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-3 sm:pb-6 md:pb-8 lg:pb-10 pointer-events-none animate-donation-text">
+          <div className="absolute inset-0 site-container flex items-end pb-3 sm:pb-6 md:pb-8 lg:pb-10 pointer-events-none animate-donation-text">
             <span
               aria-hidden="true"
               className="text-[44px] sm:text-[68px] md:text-[96px] lg:text-[124px] font-normal uppercase tracking-wider leading-none select-none text-[#111111] block"
@@ -113,8 +113,8 @@ export default function DonationHero() {
         </div>
       </div>
 
-      {/* Intro Paragraph matching user mockup - Aligned with Navbar Logo */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 animate-donation-intro">
+      {/* Intro Paragraph - Aligned to site-container */}
+      <div className="site-container pt-3 sm:pt-4 animate-donation-intro">
         <p
           className="text-neutral-700 text-sm sm:text-base lg:text-[17px] leading-relaxed font-normal max-w-4xl"
           style={{
