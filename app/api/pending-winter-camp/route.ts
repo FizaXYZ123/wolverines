@@ -149,8 +149,8 @@ export async function POST(request: NextRequest) {
 
     const origin =
       request.headers.get("origin") ||
+        process.env.LIVE_URL ||
       request.nextUrl.origin ||
-      process.env.LIVE_URL ||
       "http://localhost:3000";
 
     const session = await stripe.checkout.sessions.create({

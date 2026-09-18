@@ -151,8 +151,8 @@ export async function POST(request: NextRequest) {
 
     const origin =
       request.headers.get("origin") ||
-      request.nextUrl.origin ||
       process.env.LIVE_URL ||
+      request.nextUrl.origin ||
       "http://localhost:3000";
 
     let session;
