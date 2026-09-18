@@ -147,6 +147,12 @@ export async function POST(request: NextRequest) {
         },
       });
 
+    const origin =
+      request.headers.get("origin") ||
+      request.nextUrl.origin ||
+      process.env.LIVE_URL ||
+      "http://localhost:3000";
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
 
@@ -165,10 +171,9 @@ export async function POST(request: NextRequest) {
         },
       ],
 
-      success_url:
-        "http://localhost:3000/summer-program/success?session_id={CHECKOUT_SESSION_ID}",
+      success_url: `${origin}/summer-program/success?session_id={CHECKOUT_SESSION_ID}`,
 
-      cancel_url: "http://localhost:3000/summer-program/cancel",
+      cancel_url: `${origin}/summer-program/cancel`,
 
       metadata: {
         pendingRegistrationId: pendingRegistration.id,

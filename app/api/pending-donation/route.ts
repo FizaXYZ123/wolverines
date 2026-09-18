@@ -149,6 +149,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    const origin =
+      request.headers.get("origin") ||
+      request.nextUrl.origin ||
+      process.env.LIVE_URL ||
+      "http://localhost:3000";
+
     let session;
 
     try {
@@ -174,10 +180,9 @@ export async function POST(request: NextRequest) {
           },
         ],
 
-        success_url:
-          "http://localhost:3000/donation/success?session_id={CHECKOUT_SESSION_ID}",
+        success_url: `${origin}/donation/success?session_id={CHECKOUT_SESSION_ID}`,
 
-        cancel_url: "http://localhost:3000/donation/cancel",
+        cancel_url: `${origin}/donation/cancel`,
 
         metadata: {
           pendingDonationId: pendingDonation.id,
