@@ -190,19 +190,20 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
 
     // Time
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
 
     if (startTime !== undefined) {
       if (typeof startTime !== "string" || !timeRegex.test(startTime)) {
         return NextResponse.json(
           {
-            message: "startTime must be in HH:mm:ss format",
+            message: "startTime must be in HH:mm or HH:mm:ss format",
           },
           { status: 400 },
         );
       }
 
-      updateData.startTime = new Date(`1970-01-01T${startTime}Z`);
+      const normStartTime = startTime.length === 5 ? `${startTime}:00` : startTime;
+      updateData.startTime = new Date(`1970-01-01T${normStartTime}Z`);
     }
 
     if (endTime !== undefined) {
@@ -210,13 +211,14 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         return NextResponse.json(
           {
             success: false,
-            message: "endTime must be in HH:mm:ss format",
+            message: "endTime must be in HH:mm or HH:mm:ss format",
           },
           { status: 400 },
         );
       }
 
-      updateData.endTime = new Date(`1970-01-01T${endTime}Z`);
+      const normEndTime = endTime.length === 5 ? `${endTime}:00` : endTime;
+      updateData.endTime = new Date(`1970-01-01T${normEndTime}Z`);
     }
 
     // Check final start/end time

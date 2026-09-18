@@ -349,19 +349,20 @@ export async function PUT(
     // SHORT DESCRIPTION
     if (shortDescription !== null) {
       if (
-        typeof shortDescription !== "string"
+        typeof shortDescription !== "string" ||
+        !shortDescription.trim()
       ) {
         return NextResponse.json(
           {
             message:
-              "shortDescription must be a string",
+              "shortDescription is required and cannot be empty",
           },
           { status: 400 },
         );
       }
 
       updateData.shortDescription =
-        shortDescription.trim() || null;
+        shortDescription.trim();
     }
 
     // FEATURED IMAGE

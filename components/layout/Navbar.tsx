@@ -24,6 +24,10 @@ export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full bg-[#0d0d0d] border-b border-[#222222]/80 select-none shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

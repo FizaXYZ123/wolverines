@@ -149,12 +149,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const origin =
-      request.headers.get("origin") ||
-      process.env.LIVE_URL ||
-      request.nextUrl.origin ||
-      "http://localhost:3000";
-
+    const origin = process.env.LIVE_URL
     let session;
 
     try {

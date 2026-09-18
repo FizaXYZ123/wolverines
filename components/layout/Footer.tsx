@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import GradientDivider from "@/components/ui/GradientDivider";
 
 const quickLinks = [
@@ -14,6 +17,11 @@ const quickLinks = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
   return (
     <div className="w-full bg-white flex justify-center">
       <footer className="w-full max-w-[1480px] bg-[#111111] text-white border-t border-neutral-800/60 select-none">

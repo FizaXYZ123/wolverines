@@ -79,6 +79,12 @@ export async function POST(request: NextRequest) {
             }, { status: 400 })
         }
 
+        if (typeof shortDescription !== "string" || !shortDescription.trim()) {
+            return NextResponse.json({
+                message: "shortDescription is required",
+            }, { status: 400 })
+        }
+
         if (!(featuredImage instanceof File)) {
             return NextResponse.json(
                 {

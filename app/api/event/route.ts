@@ -73,14 +73,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate time format HH:mm:ss
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+    // Validate time format HH:mm or HH:mm:ss
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
 
     if (typeof startTime !== "string" || !timeRegex.test(startTime)) {
       return NextResponse.json(
         {
           success: false,
-          message: "startTime must be in HH:mm:ss format",
+          message: "startTime must be in HH:mm or HH:mm:ss format",
         },
         { status: 400 },
       );
@@ -90,13 +90,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "endTime must be in HH:mm:ss format",
+          message: "endTime must be in HH:mm or HH:mm:ss format",
         },
         { status: 400 },
       );
     }
 
-    if (startTime >= endTime) {
+    const normStartTime = startTime.length === 5 ? `${startTime}:00` : startTime;
+    const normEndTime = endTime.length === 5 ? `${endTime}:00` : endTime;
+
+    if (normStartTime >= normEndTime) {
       return NextResponse.json(
         {
           success: false,
@@ -110,8 +113,8 @@ export async function POST(request: NextRequest) {
       data: {
         date: parsedDate,
         location: location.trim(),
-        startTime: new Date(`1970-01-01T${startTime}Z`),
-        endTime: new Date(`1970-01-01T${endTime}Z`),
+        startTime: new Date(`1970-01-01T${normStartTime}Z`),
+        endTime: new Date(`1970-01-01T${normEndTime}Z`),
       },
     });
 
