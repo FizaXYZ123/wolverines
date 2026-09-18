@@ -21,17 +21,18 @@ export default function RegistrationForm() {
   const [relationToChild, setRelationToChild] = useState("Mother");
   const [email, setEmail] = useState("");
   const [primaryCountry, setPrimaryCountry] = useState<CountryItem>(
-    () => COUNTRIES.find((c) => c.code === "CA") || COUNTRIES[0]
+    () => COUNTRIES.find((c) => c.code === "CA") || COUNTRIES[0],
   );
   const [contactNumber, setContactNumber] = useState("");
   const [message, setMessage] = useState("");
 
   // Optional secondary contact
   const [secondaryCountry, setSecondaryCountry] = useState<CountryItem>(
-    () => COUNTRIES.find((c) => c.code === "CA") || COUNTRIES[0]
+    () => COUNTRIES.find((c) => c.code === "CA") || COUNTRIES[0],
   );
   const [secondaryContactNumber, setSecondaryContactNumber] = useState("");
-  const [secondaryRelationToChild, setSecondaryRelationToChild] = useState("Father");
+  const [secondaryRelationToChild, setSecondaryRelationToChild] =
+    useState("Father");
 
   // Optional address fields
   const [address, setAddress] = useState("");
@@ -117,7 +118,7 @@ export default function RegistrationForm() {
     }
     if (cleanPhone.length !== primaryRule.maxLength) {
       triggerError(
-        `Please enter a valid ${primaryRule.maxLength}-digit contact number for ${primaryCountry.name}.`
+        `Please enter a valid ${primaryRule.maxLength}-digit contact number for ${primaryCountry.name}.`,
       );
       return;
     }
@@ -127,12 +128,14 @@ export default function RegistrationForm() {
     }
 
     // Clean secondary contact number if provided
-    const cleanSecondaryPhone = secondaryContactNumber.trim().replace(/\D/g, "");
+    const cleanSecondaryPhone = secondaryContactNumber
+      .trim()
+      .replace(/\D/g, "");
     if (cleanSecondaryPhone) {
       const secondaryRule = getCountryPhoneRule(secondaryCountry.code);
       if (cleanSecondaryPhone.length !== secondaryRule.maxLength) {
         triggerError(
-          `Please enter a valid ${secondaryRule.maxLength}-digit secondary contact number for ${secondaryCountry.name}.`
+          `Please enter a valid ${secondaryRule.maxLength}-digit secondary contact number for ${secondaryCountry.name}.`,
         );
         return;
       }
@@ -183,11 +186,13 @@ export default function RegistrationForm() {
       setToast({
         type: "success",
         title: "Registration Submitted",
-        message: json.message || "Your join request has been submitted successfully.",
+        message:
+          json.message || "Your join request has been submitted successfully.",
       });
     } catch (err: any) {
       console.error("Join Our Club error:", err);
-      const msg = err.message || "Something went wrong while submitting the form.";
+      const msg =
+        err.message || "Something went wrong while submitting the form.";
       setErrorMessage(msg);
       setToast({
         type: "error",
@@ -246,16 +251,22 @@ export default function RegistrationForm() {
             </h3>
             <p className="text-neutral-600 text-sm sm:text-base leading-relaxed mb-6">
               Thank you! The registration request for{" "}
-              <strong className="text-neutral-900 font-bold">{successData.childName || childName}</strong> has been submitted.
-              We will contact{" "}
-              <strong className="text-neutral-900 font-bold">{successData.email || email}</strong> shortly.
+              <strong className="text-neutral-900 font-bold">
+                {successData.childName || childName}
+              </strong>{" "}
+              has been submitted. We will contact{" "}
+              <strong className="text-neutral-900 font-bold">
+                {successData.email || email}
+              </strong>{" "}
+              shortly.
             </p>
             <div className="bg-white p-4 rounded-xl border border-neutral-200 text-left text-xs sm:text-sm text-neutral-600 mb-6 space-y-1.5">
               <p>
                 <strong>Child Name:</strong> {childName}
               </p>
               <p>
-                <strong>Parent / Guardian:</strong> {parentGuardianName} ({relationToChild})
+                <strong>Parent / Guardian:</strong> {parentGuardianName} (
+                {relationToChild})
               </p>
               <p>
                 <strong>Contact:</strong> {primaryCountry.dial} {contactNumber}
@@ -271,7 +282,11 @@ export default function RegistrationForm() {
           </div>
         ) : (
           /* The Form */
-          <form onSubmit={handleSubmit} noValidate className="space-y-6 max-w-5xl">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="space-y-6 max-w-5xl"
+          >
             {/* Error Message Banner */}
             {errorMessage && (
               <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3">
@@ -377,7 +392,8 @@ export default function RegistrationForm() {
                 {/* parentGuardianName */}
                 <div>
                   <label className="block text-xs sm:text-sm font-semibold text-neutral-800 mb-1.5">
-                    Parent / Guardian Name <span className="text-[#DE2027]">*</span>
+                    Parent / Guardian Name{" "}
+                    <span className="text-[#DE2027]">*</span>
                   </label>
                   <input
                     type="text"
@@ -472,7 +488,9 @@ export default function RegistrationForm() {
                   </label>
                   <select
                     value={secondaryRelationToChild}
-                    onChange={(e) => setSecondaryRelationToChild(e.target.value)}
+                    onChange={(e) =>
+                      setSecondaryRelationToChild(e.target.value)
+                    }
                     className="w-full px-3.5 py-2.5 rounded border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:border-neutral-500 transition cursor-pointer"
                   >
                     {RELATIONS.map((r) => (

@@ -2,18 +2,20 @@
 
 import { useEffect, useState } from "react";
 import {
-  HeartHandshake,
   Search,
-  Download,
   Eye,
-  DollarSign,
   Mail,
   Phone,
   RefreshCw,
   Loader2,
   UserCheck,
 } from "lucide-react";
-import { adminFetch, formatCurrency, formatDate, formatDateTime } from "@/app/lib/admin-api";
+import {
+  adminFetch,
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+} from "@/app/lib/admin-api";
 import DetailModal from "@/components/admin/DetailModal";
 
 export default function DonationsPage() {
@@ -40,12 +42,12 @@ export default function DonationsPage() {
 
   const totalAmount = donations.reduce(
     (acc, d) => acc + parseFloat(d.amount || 0),
-    0
+    0,
   );
   const averageDonation =
     donations.length > 0 ? totalAmount / donations.length : 0;
   const acknowledgedCount = donations.filter(
-    (d) => d.acknowledgement === "ACKNOWLEDGE"
+    (d) => d.acknowledgement === "ACKNOWLEDGE",
   ).length;
 
   const filteredDonations = donations.filter((d) => {
@@ -60,44 +62,38 @@ export default function DonationsPage() {
     );
   });
 
-  const exportCSV = () => {
-    if (filteredDonations.length === 0) return;
-    let csv = "Donor Name,Email,Country Code,Contact Number,Amount,Currency,Acknowledgement,Status,Stripe Session ID,Date\n";
-    filteredDonations.forEach((d) => {
-      csv += `"${d.donorName || ""}","${d.email || ""}","${d.countryCode || ""}","${d.contactNumber || ""}","${d.amount || 0}","${d.currency || "CAD"}","${d.acknowledgement || ""}","${d.paymentStatus || ""}","${d.stripeCheckoutSessionId || ""}","${d.createdAt || ""}"\n`;
-    });
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `donations_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Metrics Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-3xl bg-[#141414] border border-white/10 shadow-xl">
-          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Total Raised</p>
+          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+            Total Raised
+          </p>
           <h3 className="text-2xl font-extrabold text-emerald-400 mt-1">
             {formatCurrency(totalAmount)}
           </h3>
-          <p className="text-[11px] text-neutral-500 mt-1">From all donor payments</p>
+          <p className="text-[11px] text-neutral-500 mt-1">
+            From all donor payments
+          </p>
         </div>
 
         <div className="p-5 rounded-3xl bg-[#141414] border border-white/10 shadow-xl">
-          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Total Donors</p>
+          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+            Total Donors
+          </p>
           <h3 className="text-2xl font-extrabold text-white mt-1">
             {donations.length}
           </h3>
-          <p className="text-[11px] text-neutral-500 mt-1">Successful contributions</p>
+          <p className="text-[11px] text-neutral-500 mt-1">
+            Successful contributions
+          </p>
         </div>
 
         <div className="p-5 rounded-3xl bg-[#141414] border border-white/10 shadow-xl">
-          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Average Donation</p>
+          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+            Average Donation
+          </p>
           <h3 className="text-2xl font-extrabold text-white mt-1">
             {formatCurrency(averageDonation)}
           </h3>
@@ -105,11 +101,18 @@ export default function DonationsPage() {
         </div>
 
         <div className="p-5 rounded-3xl bg-[#141414] border border-white/10 shadow-xl">
-          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Public Recognition</p>
+          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+            Public Recognition
+          </p>
           <h3 className="text-2xl font-extrabold text-white mt-1">
-            {acknowledgedCount} <span className="text-xs font-normal text-neutral-400">/ {donations.length}</span>
+            {acknowledgedCount}{" "}
+            <span className="text-xs font-normal text-neutral-400">
+              / {donations.length}
+            </span>
           </h3>
-          <p className="text-[11px] text-neutral-500 mt-1">Opted for recognition</p>
+          <p className="text-[11px] text-neutral-500 mt-1">
+            Opted for recognition
+          </p>
         </div>
       </div>
 
@@ -134,16 +137,9 @@ export default function DonationsPage() {
             className="p-2.5 rounded-xl bg-[#141414] border border-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
             title="Refresh donations"
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-          </button>
-
-          <button
-            onClick={exportCSV}
-            disabled={filteredDonations.length === 0}
-            className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 hover:text-white flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-40"
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
           </button>
         </div>
       </div>
@@ -154,7 +150,9 @@ export default function DonationsPage() {
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center text-neutral-400">
               <Loader2 className="h-8 w-8 animate-spin text-[#D32F2F] mb-3" />
-              <p className="text-xs uppercase tracking-wider font-semibold">Loading donations...</p>
+              <p className="text-xs uppercase tracking-wider font-semibold">
+                Loading donations...
+              </p>
             </div>
           ) : filteredDonations.length === 0 ? (
             <div className="py-16 text-center text-neutral-500 text-sm">
@@ -174,7 +172,10 @@ export default function DonationsPage() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredDonations.map((d) => (
-                  <tr key={d.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr
+                    key={d.id}
+                    className="hover:bg-white/[0.02] transition-colors"
+                  >
                     <td className="py-4 px-6">
                       <div className="font-bold text-white text-sm">
                         {d.donorName}
@@ -194,7 +195,9 @@ export default function DonationsPage() {
                     </td>
                     <td className="py-4 px-6 text-right font-extrabold text-emerald-400 text-sm">
                       {formatCurrency(d.amount)}
-                      <span className="text-[10px] text-neutral-500 ml-1 uppercase">{d.currency || "CAD"}</span>
+                      <span className="text-[10px] text-neutral-500 ml-1 uppercase">
+                        {d.currency || "CAD"}
+                      </span>
                     </td>
                     <td className="py-4 px-6">
                       {d.acknowledgement === "ACKNOWLEDGE" ? (
@@ -261,25 +264,42 @@ export default function DonationsPage() {
             {/* Donor Information */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-[#0f0f0f] border border-white/5">
               <div>
-                <p className="text-[10px] text-neutral-500 uppercase font-semibold">Donor Name</p>
-                <p className="text-sm font-bold text-white mt-0.5">{selectedDonation.donorName}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-neutral-500 uppercase font-semibold">Email Address</p>
-                <p className="text-sm text-neutral-300 mt-0.5">{selectedDonation.email}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-neutral-500 uppercase font-semibold">Contact Number</p>
-                <p className="text-sm text-neutral-300 mt-0.5">
-                  {selectedDonation.countryCode} {selectedDonation.contactNumber}
+                <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                  Donor Name
+                </p>
+                <p className="text-sm font-bold text-white mt-0.5">
+                  {selectedDonation.donorName}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] text-neutral-500 uppercase font-semibold">Date & Time</p>
-                <p className="text-sm text-neutral-300 mt-0.5">{formatDateTime(selectedDonation.createdAt)}</p>
+                <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                  Email Address
+                </p>
+                <p className="text-sm text-neutral-300 mt-0.5">
+                  {selectedDonation.email}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                  Contact Number
+                </p>
+                <p className="text-sm text-neutral-300 mt-0.5">
+                  {selectedDonation.countryCode}{" "}
+                  {selectedDonation.contactNumber}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                  Date & Time
+                </p>
+                <p className="text-sm text-neutral-300 mt-0.5">
+                  {formatDateTime(selectedDonation.createdAt)}
+                </p>
               </div>
               <div className="sm:col-span-2">
-                <p className="text-[10px] text-neutral-500 uppercase font-semibold">Recognition Status</p>
+                <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                  Recognition Status
+                </p>
                 <p className="text-sm font-semibold text-white mt-0.5">
                   {selectedDonation.acknowledgement === "ACKNOWLEDGE"
                     ? "Public Recognition Accepted"
@@ -291,7 +311,9 @@ export default function DonationsPage() {
             {/* Transaction Metadata */}
             {selectedDonation.stripeCheckoutSessionId && (
               <div className="p-4 rounded-2xl bg-[#0f0f0f] border border-white/5 space-y-1">
-                <p className="text-[10px] text-neutral-500 uppercase font-semibold">Stripe Checkout Session</p>
+                <p className="text-[10px] text-neutral-500 uppercase font-semibold">
+                  Stripe Checkout Session
+                </p>
                 <p className="text-xs font-mono text-neutral-300 break-all">
                   {selectedDonation.stripeCheckoutSessionId}
                 </p>
