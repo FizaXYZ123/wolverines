@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import EventsHero from "@/components/events/EventsHero";
-import UpcomingTournamentsList from "@/components/events/UpcomingTournamentsList";
+import IndoorPracticeSchedule from "@/components/events/IndoorPracticeSchedule";
 import StickyEventCalendar from "@/components/events/StickyEventCalendar";
 
 export const metadata: Metadata = {
@@ -16,8 +16,8 @@ export default function EventsPage() {
       {/* Events Hero Section */}
       <EventsHero />
 
-      {/* Featured Tournaments & Events Section (10 Events + Show More + Interactive Modal Screen) */}
-      <UpcomingTournamentsList />
+      {/* Indoor Practice Schedule Section */}
+      <IndoorPracticeSchedule />
 
       {/* Sticky Event Calendar Button on the Right Side */}
       <StickyEventCalendar />

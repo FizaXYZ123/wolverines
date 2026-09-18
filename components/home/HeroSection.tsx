@@ -56,11 +56,25 @@ export default function HeroSection() {
           {/* Right Column: Floating Frosted Glass Cards Panel */}
           <div className="lg:col-span-5 w-full animate-hero-right">
             <div
-              className="bg-white/[0.08] border border-white/20 rounded-2xl p-4 sm:p-5 shadow-2xl"
-              style={{ backdropFilter: "blur(2px)", WebkitBackdropFilter: "blur(2px)" }}
+              className="relative overflow-hidden rounded-2xl p-4 sm:p-5 border border-white/25 border-b-white/10 bg-gradient-to-b from-white/[0.22] via-white/[0.08] to-transparent backdrop-blur-md"
+              style={{
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                boxShadow:
+                  "0 20px 40px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.45)",
+              }}
             >
+              {/* White frosted fade down to half - No black */}
+              <div
+                className="absolute inset-x-0 top-0 h-[55%] pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.10) 60%, rgba(255,255,255,0) 100%)",
+                }}
+              />
+
               {/* Top Row: Donation & Registration Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {/* Donation Card */}
                 <div className="bg-white/95 hover:bg-white text-neutral-900 rounded-xl p-4 sm:p-4.5 flex flex-col justify-between transition-all duration-200 hover:shadow-md">
                   <div>
@@ -105,7 +119,7 @@ export default function HeroSection() {
               </div>
 
               {/* Bottom Card: Upcoming Matches */}
-              <div className="bg-white/95 hover:bg-white text-neutral-900 rounded-xl p-3.5 sm:p-4 mt-3.5 flex items-center gap-3 sm:gap-4 transition-all duration-200 hover:shadow-md">
+              <div className="relative z-10 bg-white/95 hover:bg-white text-neutral-900 rounded-xl p-3.5 sm:p-4 mt-3.5 flex items-center gap-3 sm:gap-4 transition-all duration-200 hover:shadow-md">
                 {/* Match Thumbnail */}
                 <div className="relative w-24 sm:w-28 aspect-[4/3] rounded-lg overflow-hidden flex-shrink-0 bg-neutral-200">
                   <Image

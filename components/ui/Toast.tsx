@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 
+export type ToastType = "error" | "success" | "info" | "warning";
+
 export interface ToastProps {
-  type?: "error" | "success" | "info" | "warning";
+  type?: ToastType;
   title?: string;
   message: string;
   onClose: () => void;

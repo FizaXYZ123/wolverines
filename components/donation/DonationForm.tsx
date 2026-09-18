@@ -1,62 +1,128 @@
 "use client";
 
 import React, { useState } from "react";
-import PhoneCountryInput from "@/components/ui/PhoneCountryInput";
+import PhoneCountryInput, {
+  CountryItem,
+  COUNTRIES,
+} from "@/components/ui/PhoneCountryInput";
+import Toast, { ToastType } from "@/components/ui/Toast";
+import { API_ENDPOINTS } from "@/constants/endpoints";
 
 export default function DonationForm() {
   // Form fields state
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [contactCountryCode, setContactCountryCode] = useState("+1");
+  const [selectedCountry, setSelectedCountry] = useState<CountryItem>(() => {
+    return COUNTRIES.find((c) => c.code === "CA") || COUNTRIES[0];
+  });
   const [contactNumber, setContactNumber] = useState("");
   const [donationAmount, setDonationAmount] = useState("");
-  const [acknowledgement, setAcknowledgement] = useState<"public" | "anonymous">("public");
-
-  // Payment details
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [country, setCountry] = useState("Canada");
-
-  // Save for faster checkout (Link)
-  const [linkCountryCode, setLinkCountryCode] = useState("+1");
-  const [linkMobile, setLinkMobile] = useState("");
-  const [linkName, setLinkName] = useState("");
-  const [linkEmail, setLinkEmail] = useState("");
+  const [acknowledgement, setAcknowledgement] = useState<"ACKNOWLEDGE" | "ANONYMOUS">("ACKNOWLEDGE");
 
   // Submission state
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedInfo, setSubmittedInfo] = useState<{
+    id?: string;
+    amount?: number;
+    donorName?: string;
+    email?: string;
+  } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Toast notification state
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName.trim()) {
-      alert("Please enter your name.");
+
+    const trimmedName = fullName.trim();
+    if (!trimmedName) {
+      setToast({ message: "Please enter your name.", type: "error" });
       return;
     }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
+      setToast({ message: "Please enter your email address.", type: "error" });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setToast({ message: "Invalid email address format.", type: "error" });
+      return;
+    }
+
+    const trimmedPhone = contactNumber.trim();
+    if (!trimmedPhone) {
+      setToast({ message: "Please enter your contact number.", type: "error" });
+      return;
+    }
+
     const amountNum = parseFloat(donationAmount);
-    if (isNaN(amountNum) || amountNum < 1) {
-      alert("Please enter a valid donation amount.");
+    if (isNaN(amountNum) || amountNum < 100) {
+      setToast({ message: "Minimum donation amount is 100 CAD.", type: "error" });
       return;
     }
+
     setIsProcessing(true);
-    setTimeout(() => {
+
+    try {
+      const payload = {
+        donorName: trimmedName,
+        email: trimmedEmail,
+        countryCode: selectedCountry.dial,
+        amount: Number(amountNum.toFixed(2)),
+        contactNumber: trimmedPhone,
+        acknowledgement: acknowledgement, // "ACKNOWLEDGE" or "ANONYMOUS"
+      };
+
+      const res = await fetch(API_ENDPOINTS.PENDING_DONATION, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setToast({
+          message: result.message || "Failed to create donation inquiry.",
+          type: "error",
+        });
+        return;
+      }
+
+      setSubmittedInfo({
+        id: result.data?.id,
+        amount: result.data?.amount || amountNum,
+        donorName: trimmedName,
+        email: trimmedEmail,
+      });
+
+      setToast({
+        message: result.message || "Donation created successfully!",
+        type: "success",
+      });
+
+      // Redirect to Stripe checkout URL if returned
+      if (result.data?.paymentUrl) {
+        setTimeout(() => {
+          window.location.href = result.data.paymentUrl;
+        }, 1000);
+      } else {
+        setIsSubmitted(true);
+      }
+    } catch {
+      setToast({
+        message: "Network error. Please check your connection and try again.",
+        type: "error",
+      });
+    } finally {
       setIsProcessing(false);
-      setIsSubmitted(true);
-    }, 1200);
-  };
-
-  const formatCardNumber = (val: string) => {
-    const raw = val.replace(/\D/g, "").slice(0, 16);
-    return raw.replace(/(.{4})/g, "$1 ").trim();
-  };
-
-  const formatExpiry = (val: string) => {
-    const raw = val.replace(/\D/g, "").slice(0, 4);
-    if (raw.length >= 3) {
-      return `${raw.slice(0, 2)} / ${raw.slice(2)}`;
     }
-    return raw;
   };
 
   return (
@@ -118,39 +184,41 @@ export default function DonationForm() {
             <p className="text-neutral-600 text-sm sm:text-base leading-relaxed mb-6">
               Your contribution of{" "}
               <strong className="text-neutral-900 font-bold">
-                ${parseFloat(donationAmount || "100").toFixed(2)} CAD
+                ${(submittedInfo?.amount || parseFloat(donationAmount || "100")).toFixed(2)} CAD
               </strong>{" "}
               helps Wolverines Field Hockey Club empower youth athletes across Abbotsford and British Columbia.
             </p>
             <div className="bg-white p-4 rounded-xl border border-neutral-200 text-left text-xs sm:text-sm text-neutral-600 mb-6 space-y-1.5">
+              {submittedInfo?.id && (
+                <p>
+                  <strong>Confirmation ID:</strong> {submittedInfo.id}
+                </p>
+              )}
               <p>
-                <strong>Confirmation ID:</strong> WLV-DON-{Math.floor(100000 + Math.random() * 900000)}
+                <strong>Donor Name:</strong> {acknowledgement === "ANONYMOUS" ? "Anonymous Supporter" : (submittedInfo?.donorName || fullName)}
               </p>
               <p>
-                <strong>Donor Name:</strong> {acknowledgement === "anonymous" ? "Anonymous Supporter" : fullName}
-              </p>
-              <p>
-                <strong>Receipt Sent To:</strong> {email || linkEmail || "Your provided email"}
+                <strong>Receipt Sent To:</strong> {submittedInfo?.email || email}
               </p>
             </div>
             <button
               type="button"
               onClick={() => {
                 setIsSubmitted(false);
+                setSubmittedInfo(null);
                 setDonationAmount("");
                 setFullName("");
-                setCardNumber("");
-                setCvc("");
-                setExpiryDate("");
+                setEmail("");
+                setContactNumber("");
               }}
-              className="px-8 py-3 rounded-lg bg-[#DE2027] hover:bg-[#c41920] text-white font-bold text-sm tracking-wide shadow-sm transition"
+              className="px-8 py-3 rounded-lg bg-[#DE2027] hover:bg-[#c41920] text-white font-bold text-sm tracking-wide shadow-sm transition cursor-pointer"
             >
               Make Another Donation
             </button>
           </div>
         ) : (
-          /* The Form matching user screenshot exactly */
-          <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl animate-donation-form">
+          /* The Form */
+          <form noValidate onSubmit={handleSubmit} className="space-y-6 max-w-5xl animate-donation-form">
             {/* ROW 1: Name & Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -169,10 +237,11 @@ export default function DonationForm() {
 
               <div>
                 <label className="block text-sm font-semibold text-neutral-800 mb-2">
-                  Email
+                  Email <span className="text-[#DE2027]">*</span>
                 </label>
                 <input
                   type="email"
+                  required
                   placeholder="Please enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -191,8 +260,9 @@ export default function DonationForm() {
                   required
                   value={contactNumber}
                   onChange={setContactNumber}
+                  selectedCountry={selectedCountry}
+                  onCountryChange={setSelectedCountry}
                   defaultCountryCode="CA"
-                  placeholder="506-234-5678"
                 />
               </div>
 
@@ -203,7 +273,7 @@ export default function DonationForm() {
                 <div className="relative flex items-center rounded border border-neutral-300 bg-white focus-within:border-neutral-500 transition">
                   <input
                     type="number"
-                    min="1"
+                    min="100"
                     step="any"
                     required
                     placeholder="Minimum donation $100"
@@ -228,20 +298,20 @@ export default function DonationForm() {
                   <input
                     type="radio"
                     name="acknowledgement"
-                    checked={acknowledgement === "public"}
-                    onChange={() => setAcknowledgement("public")}
+                    checked={acknowledgement === "ACKNOWLEDGE"}
+                    onChange={() => setAcknowledgement("ACKNOWLEDGE")}
                     className="w-4 h-4 text-[#DE2027] border-neutral-300 focus:ring-0 accent-[#DE2027] cursor-pointer"
                   />
                   <span className="text-sm text-neutral-700 group-hover:text-neutral-900">
-                    Yes you may acknowledge my donation.
+                    Yes, you may acknowledge my donation publicly.
                   </span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer group select-none">
                   <input
                     type="radio"
                     name="acknowledgement"
-                    checked={acknowledgement === "anonymous"}
-                    onChange={() => setAcknowledgement("anonymous")}
+                    checked={acknowledgement === "ANONYMOUS"}
+                    onChange={() => setAcknowledgement("ANONYMOUS")}
                     className="w-4 h-4 text-[#DE2027] border-neutral-300 focus:ring-0 accent-[#DE2027] cursor-pointer"
                   />
                   <span className="text-sm text-neutral-700 group-hover:text-neutral-900">
@@ -251,186 +321,31 @@ export default function DonationForm() {
               </div>
             </div>
 
-            {/* Credit / Debit Card Section */}
-            <div className="pt-4 space-y-4">
-              <h3 className="text-base font-semibold text-neutral-900">
-                Credit / Debit Card <span className="text-[#DE2027]">*</span>
-              </h3>
-
-              {/* Card Number, Expiry, CVC in 3 Columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                {/* Card Number (6 cols) */}
-                <div className="sm:col-span-6">
-                  <label className="block text-xs text-neutral-500 mb-1">
-                    Card number
-                  </label>
-                  <div className="relative flex items-center rounded border border-neutral-300 bg-white focus-within:border-neutral-500 transition">
-                    <input
-                      type="text"
-                      required
-                      maxLength={19}
-                      placeholder="1234 1234 1234 1234"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                      className="w-full pl-3.5 pr-28 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 bg-transparent focus:outline-none"
-                    />
-                    {/* Card Brand Icons */}
-                    <div className="absolute right-2.5 flex items-center gap-1.5 select-none pointer-events-none">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#1A1F71] text-white tracking-tighter">
-                        VISA
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#EB001B] text-white tracking-tighter">
-                        MC
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#006FCF] text-white tracking-tighter">
-                        AMEX
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FF5F00] text-white tracking-tighter">
-                        DISC
-                      </span>
-                    </div>
-                  </div>
+            {/* Secure Payment via Stripe Notice */}
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-5 sm:p-6 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-neutral-800 font-semibold text-sm">
+                  <span className="text-emerald-600 text-base">🔒</span>
+                  <span>Secure Payment via Stripe</span>
                 </div>
-
-                {/* Expiry Date (3 cols) */}
-                <div className="sm:col-span-3">
-                  <label className="block text-xs text-neutral-500 mb-1">
-                    Expiry date
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={7}
-                    placeholder="MM / YY"
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(formatExpiry(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded border border-neutral-300 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-500 transition"
-                  />
-                </div>
-
-                {/* Security Code (3 cols) */}
-                <div className="sm:col-span-3">
-                  <label className="block text-xs text-neutral-500 mb-1">
-                    Security code
-                  </label>
-                  <div className="relative flex items-center rounded border border-neutral-300 bg-white focus-within:border-neutral-500 transition">
-                    <input
-                      type="password"
-                      required
-                      maxLength={4}
-                      placeholder="CVC"
-                      value={cvc}
-                      onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                      className="w-full pl-3.5 pr-9 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 bg-transparent focus:outline-none"
-                    />
-                    <svg
-                      className="absolute right-2.5 w-4 h-4 text-neutral-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <rect x="2" y="5" width="20" height="14" rx="2" strokeWidth="1.5" />
-                      <path d="M2 10h20" strokeWidth="1.5" />
-                      <circle cx="17" cy="15" r="1" fill="currentColor" />
-                    </svg>
-                  </div>
+                <div className="flex items-center gap-1.5 select-none">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1A1F71] text-white tracking-tighter">
+                    VISA
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EB001B] text-white tracking-tighter">
+                    MC
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#006FCF] text-white tracking-tighter">
+                    AMEX
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FF5F00] text-white tracking-tighter">
+                    DISC
+                  </span>
                 </div>
               </div>
-
-              {/* Country / Territory Dropdown */}
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">
-                  Country/Territory
-                </label>
-                <div className="relative">
-                  <select
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="w-full appearance-none px-3.5 py-2.5 rounded border border-neutral-300 bg-white text-sm text-neutral-900 focus:outline-none focus:border-neutral-500 transition cursor-pointer"
-                  >
-                    <option value="Canada">Canada</option>
-                    <option value="India">India</option>
-                    <option value="United States">United States</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Australia">Australia</option>
-                    <option value="New Zealand">New Zealand</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                    <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Optional "Save my information for faster checkout" (Link box) */}
-            <div className="rounded-lg border border-neutral-300 p-4 sm:p-5 bg-white space-y-4">
-              <div>
-                <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-medium bg-neutral-100 text-neutral-600 border border-neutral-200">
-                  Optional
-                </span>
-                <h4 className="text-sm font-semibold text-neutral-900 mt-2">
-                  Save my information for faster checkout
-                </h4>
-              </div>
-
-              {/* Mobile Number inside Link box */}
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">
-                  Mobile number
-                </label>
-                <PhoneCountryInput
-                  value={linkMobile}
-                  onChange={setLinkMobile}
-                  defaultCountryCode="IN"
-                  placeholder="081234 56789"
-                />
-              </div>
-
-              {/* Full Name inside Link box */}
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">
-                  Full name
-                </label>
-                <input
-                  type="text"
-                  placeholder="First and last name"
-                  value={linkName}
-                  onChange={(e) => setLinkName(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded border border-neutral-300 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-500 transition"
-                />
-              </div>
-
-              {/* Link Terms Notice */}
-              <div className="pt-1 flex items-start gap-1.5 text-xs text-neutral-500 leading-relaxed">
-                <span className="text-neutral-400 shrink-0 text-sm">ⓘ</span>
-                <p>
-                  <strong className="font-bold text-neutral-700">link</strong> • By providing phone number and email, you agree to create an account subject to Link&apos;s{" "}
-                  <a href="#" className="underline hover:text-neutral-800">
-                    Terms
-                  </a>{" "}
-                  and{" "}
-                  <a href="#" className="underline hover:text-neutral-800">
-                    Privacy Policy
-                  </a>
-                  .
-                </p>
-              </div>
-            </div>
-
-            {/* Email Field below the optional Link box */}
-            <div>
-              <label className="block text-xs text-neutral-500 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={linkEmail}
-                onChange={(e) => setLinkEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded border border-neutral-300 bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-500 transition"
-              />
+              <p className="text-xs text-neutral-500 leading-relaxed">
+                When you click Donate, you will be redirected to the official Stripe Checkout portal to complete your transaction securely via Credit Card, Apple Pay, or Google Pay.
+              </p>
             </div>
 
             {/* Donate Button */}
@@ -438,14 +353,49 @@ export default function DonationForm() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="px-10 py-3 rounded bg-[#DE2027] hover:bg-[#c41920] active:bg-[#a8141a] text-white font-bold text-sm tracking-wide shadow-sm transition-all duration-150 cursor-pointer disabled:opacity-50"
+                className="px-10 py-3 rounded bg-[#DE2027] hover:bg-[#c41920] active:bg-[#a8141a] text-white font-bold text-sm tracking-wide shadow-sm transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {isProcessing ? "Processing..." : "Donate"}
+                {isProcessing ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Processing...
+                  </>
+                ) : (
+                  "Donate"
+                )}
               </button>
             </div>
           </form>
         )}
       </div>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </section>
   );
 }

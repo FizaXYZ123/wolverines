@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { COUNTRIES, CountryItem } from "@/components/ui/PhoneCountryInput";
+import {
+  COUNTRIES,
+  CountryItem,
+  getCountryPhoneRule,
+} from "@/components/ui/PhoneCountryInput";
+import { API_ENDPOINTS } from "@/constants/endpoints";
+import Toast, { ToastType } from "@/components/ui/Toast";
 
 export default function ContactSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -16,7 +22,7 @@ export default function ContactSection() {
   const countrySearchInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
     contactNumber: "",
     message: "",
@@ -24,7 +30,7 @@ export default function ContactSection() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
   // Close country dropdown on click outside
   useEffect(() => {
@@ -61,6 +67,8 @@ export default function ContactSection() {
     return () => observer.disconnect();
   }, []);
 
+  const currentPhoneRule = getCountryPhoneRule(selectedCountry.code);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -68,30 +76,127 @@ export default function ContactSection() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digitsOnly = e.target.value.replace(/\D/g, "");
+    const truncated = digitsOnly.slice(0, currentPhoneRule.maxLength);
+    setFormData((prev) => ({ ...prev, contactNumber: truncated }));
+  };
+
+  const handlePhoneKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      [
+        "Backspace",
+        "Delete",
+        "Tab",
+        "Escape",
+        "Enter",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+        "Home",
+        "End",
+      ].includes(e.key) ||
+      e.ctrlKey ||
+      e.metaKey
+    ) {
+      return;
+    }
+
+    if (!/^\d$/.test(e.key)) {
+      e.preventDefault();
+      return;
+    }
+
+    const input = e.currentTarget;
+    const hasSelection =
+      (input.selectionEnd ?? 0) - (input.selectionStart ?? 0) > 0;
+    if (!hasSelection && formData.contactNumber.length >= currentPhoneRule.maxLength) {
+      e.preventDefault();
+    }
+  };
+
+  const handlePhonePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData("text");
+    const digitsOnly = pastedText.replace(/\D/g, "");
+    const truncated = digitsOnly.slice(0, currentPhoneRule.maxLength);
+    setFormData((prev) => ({ ...prev, contactNumber: truncated }));
+  };
+
+  const handleSelectCountry = (country: CountryItem) => {
+    setSelectedCountry(country);
+    setIsCountryDropdownOpen(false);
+    setCountrySearchQuery("");
+    const newRule = getCountryPhoneRule(country.code);
+    if (formData.contactNumber.length > newRule.maxLength) {
+      setFormData((prev) => ({
+        ...prev,
+        contactNumber: prev.contactNumber.slice(0, newRule.maxLength),
+      }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage("");
 
-    if (!formData.name.trim()) {
-      setErrorMessage("Please enter your name.");
+    if (!formData.fullName.trim()) {
+      setToast({ message: "Please enter your name.", type: "error" });
       return;
     }
     if (!formData.email.trim()) {
-      setErrorMessage("Please enter your email address.");
+      setToast({ message: "Please enter your email address.", type: "error" });
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      setToast({ message: "Invalid email address format.", type: "error" });
       return;
     }
     if (!formData.contactNumber.trim()) {
-      setErrorMessage("Please enter your contact number.");
+      setToast({ message: "Please enter your contact number.", type: "error" });
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const payload = {
+        fullName: formData.fullName.trim(),
+        countryCode: selectedCountry.dial,
+        contactNumber: formData.contactNumber.trim(),
+        email: formData.email.trim().toLowerCase(),
+        message: formData.message.trim() || undefined,
+      };
+
+      const res = await fetch(API_ENDPOINTS.CONTACT_US, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setToast({
+          message: result.error || result.message || "Failed to submit contact inquiry",
+          type: "error",
+        });
+        return;
+      }
+
+      setToast({
+        message: result.message || "Your message has been sent successfully",
+        type: "success",
+      });
       setSubmitted(true);
-      setFormData({ name: "", email: "", contactNumber: "", message: "" });
+      setFormData({ fullName: "", email: "", contactNumber: "", message: "" });
     } catch {
-      setErrorMessage("Something went wrong. Please try again or call us.");
+      setToast({
+        message: "Network error. Please check your connection and try again.",
+        type: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -101,9 +206,8 @@ export default function ContactSection() {
     <div ref={sectionRef} className="relative w-full bg-white overflow-hidden select-none">
       {/* ─── RED ANGLED HEADER BANNER WITH WORLD MAP ─── */}
       <div
-        className="absolute top-0 left-0 w-full bg-[#D21E26] overflow-hidden pointer-events-none"
+        className="absolute top-0 left-0 w-full bg-[#D21E26] overflow-hidden pointer-events-none h-[200px] sm:h-[280px] lg:h-[520px]"
         style={{
-          height: "520px",
           clipPath: "polygon(0 0, 100% 0, 100% 70%, 0 88%)",
         }}
       >
@@ -111,7 +215,7 @@ export default function ContactSection() {
         <div className="site-container relative h-full">
           <div className="relative w-full h-full">
             <img
-              src="/images/contact-world-map.png"
+              src="/images/contact-world-map.png?v=2"
               alt="World Map"
               className="w-full h-full object-cover object-left-top mix-blend-screen opacity-90 brightness-110 contrast-125"
             />
@@ -120,23 +224,23 @@ export default function ContactSection() {
       </div>
 
       {/* ─── MAIN CONTENT CONTAINER (GRID) ─── */}
-      <div className="relative z-10 site-container pt-8 sm:pt-12 lg:pt-14 pb-16 lg:pb-24">
+      <div className="relative z-10 site-container pt-4 sm:pt-8 lg:pt-14 pb-16 lg:pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
           {/* LEFT COLUMN: Map viewing space on top + CONTACT US info below */}
           <div className="lg:col-span-7 flex flex-col justify-between">
             {/* Top spacer to show world map clearly in the red banner */}
-            <div className="h-[220px] sm:h-[280px] lg:h-[350px] w-full pointer-events-none" />
+            <div className="h-[150px] sm:h-[230px] lg:h-[350px] w-full pointer-events-none" />
 
             {/* CONTACT US Details Section */}
             <div
-              className={`pt-8 sm:pt-12 lg:pt-14 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`pt-6 sm:pt-10 lg:pt-14 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
               }`}
             >
               {/* Heading */}
               <h1
-                className="text-[40px] uppercase text-neutral-900 tracking-normal leading-none mb-2"
+                className="text-[34px] sm:text-[40px] uppercase text-neutral-900 tracking-normal leading-none mb-2"
                 style={{ fontFamily: 'var(--font-bebas-neue), "Bebas Neue", var(--font-open-sans), "Open Sans", sans-serif' }}
               >
                 CONTACT US
@@ -266,9 +370,9 @@ export default function ContactSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
             }`}
           >
-            <div className="w-full bg-[#161616] text-white p-7 sm:p-9 lg:p-11 shadow-2xl rounded-[8px]">
+            <div className="w-full bg-[#161616] text-white p-5 sm:p-8 lg:p-11 shadow-2xl rounded-[8px]">
               <h2
-                className="text-[40px] uppercase text-white tracking-normal leading-none mb-2"
+                className="text-[34px] sm:text-[40px] uppercase text-white tracking-normal leading-none mb-2"
                 style={{ fontFamily: 'var(--font-bebas-neue), "Bebas Neue", var(--font-open-sans), "Open Sans", sans-serif' }}
               >
                 LET&apos;S TALK
@@ -305,23 +409,16 @@ export default function ContactSection() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                  {errorMessage && (
-                    <div className="p-3 bg-red-950/70 border border-red-800 text-red-300 text-xs rounded">
-                      {errorMessage}
-                    </div>
-                  )}
-
+                <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-6">
                   {/* Name */}
                   <div>
                     <input
                       type="text"
-                      name="name"
+                      name="fullName"
                       id="contact-name"
-                      value={formData.name}
+                      value={formData.fullName}
                       onChange={handleChange}
                       placeholder="Name"
-                      required
                       className="w-full bg-transparent border-0 border-b border-neutral-700 focus:border-white text-white placeholder-neutral-400 py-3 text-sm focus:outline-none transition-colors"
                       style={{ fontFamily: 'var(--font-open-sans), "Open Sans", sans-serif' }}
                     />
@@ -336,7 +433,6 @@ export default function ContactSection() {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="Email"
-                      required
                       className="w-full bg-transparent border-0 border-b border-neutral-700 focus:border-white text-white placeholder-neutral-400 py-3 text-sm focus:outline-none transition-colors"
                       style={{ fontFamily: 'var(--font-open-sans), "Open Sans", sans-serif' }}
                     />
@@ -367,13 +463,17 @@ export default function ContactSection() {
 
                       <input
                         type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         name="contactNumber"
                         id="contact-phone"
                         value={formData.contactNumber}
-                        onChange={handleChange}
-                        placeholder="Contact number"
-                        required
-                        className="flex-1 bg-transparent border-none text-white placeholder-neutral-400 py-1 text-sm focus:outline-none"
+                        onChange={handlePhoneChange}
+                        onKeyDown={handlePhoneKeyDown}
+                        onPaste={handlePhonePaste}
+                        maxLength={currentPhoneRule.maxLength}
+                        placeholder={currentPhoneRule.placeholder}
+                        className="flex-1 bg-transparent border-none text-white placeholder-neutral-400 py-1 text-sm focus:outline-none font-mono"
                         style={{ fontFamily: 'var(--font-open-sans), "Open Sans", sans-serif' }}
                       />
                     </div>
@@ -419,11 +519,7 @@ export default function ContactSection() {
                               <button
                                 key={`${country.code}-${country.dial}`}
                                 type="button"
-                                onClick={() => {
-                                  setSelectedCountry(country);
-                                  setIsCountryDropdownOpen(false);
-                                  setCountrySearchQuery("");
-                                }}
+                                onClick={() => handleSelectCountry(country)}
                                 className={`w-full flex items-center justify-between px-3.5 py-2.5 text-left text-xs sm:text-sm hover:bg-[#2c2c2c] transition cursor-pointer ${
                                   selectedCountry.code === country.code
                                     ? "bg-[#282828] font-semibold text-white"
@@ -485,6 +581,15 @@ export default function ContactSection() {
 
         </div>
       </div>
+
+      {/* Clean White Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
